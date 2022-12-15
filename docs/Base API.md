@@ -208,7 +208,6 @@ Return:
             "picture": "https://xxx",
             "providerPicture": "https://xxx",
             "url": ".../...",
-            "expireTime": 1212343246324,
             
             // unique information about the profile
             "status": "inProgress",
