@@ -98,24 +98,26 @@ Return:
 
     "achievements": [
         {
-            "id": "0x123",
+            "id": "0x1",
             "category": "popularity", // Classification
             "provider": "NoSocial",
             "name": "100 Followers",
             "bio": "This is xxx",
             "description": "..., ..., ...",
             "picture": "https://xxx",
+            
+            "achievementId": "0x10",
             "url": ".../...",
-            "status": "ready", // There are three states: notStart, ready, achieved; Here, only two types are returned: ready, achieved
+            "status": "ready" // There are three states: notStart, ready, achieved; Here, only two types are returned: ready, achieved
         },
         ......
     ],
 
-    "activites": {      
-        "posts": 2,
-        "comments": 0,
-        "mirrors": 0,
-        "collects": 255
+    "activites": {
+        "posts": {"total": 10, "lastweek": 3},
+        "comments": {"total": 10, "lastweek": 3},
+        "mirrors": {"total": 10, "lastweek": 3},
+        "collects": {"total": 10, "lastweek": 3}
     },
 
     "benefits": [
@@ -195,7 +197,7 @@ Request:
 Return:
 ```json
 { // ready, inProgress, notStart
-    "ready": []
+    "ready": [...,...]
     "inProgress": [ 
         {
             "id": "0x123",
