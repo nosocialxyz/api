@@ -80,7 +80,7 @@ Lenster:
 {
     "id": "0x1",
     "name": "Have 100 Followers",
-    "description": "Get 100 Followers achievement",
+    "description": "Get 100 Followers",
     "url": "..."
 }
 ```
