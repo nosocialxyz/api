@@ -1,5 +1,7 @@
 # Nosocial Entites (beta)
 
+## AI (TODO)
+... ...
 ## Achievement
 
 100 Lens Followers:
@@ -22,7 +24,6 @@
 {
     "id": "0x2", // NTF's id 1,2,3,4...
     "contractAddress": "0x463dh..33",
-    
     "name": "20 Posts in Lenster",
     "category": "publictions",
     "provider": "Lenster",
@@ -38,7 +39,6 @@ Send post on Lenster for three consecutive days:
 {
     "id": "0x3", // NTF's id 1,2,3,4...
     "contractAddress": "0x463dh..33",
-    
     "name": "Send post on Lenster for three consecutive days",
     "category": "time",
     "provider": "Lenster",
@@ -51,6 +51,8 @@ Send post on Lenster for three consecutive days:
 
 ### Apps
 
+NoSocial
+
 ``` json
 {
     "id": "0x1",
@@ -61,6 +63,9 @@ Send post on Lenster for three consecutive days:
     "achievements": ["0x1"],
     "url": ".../..."
 }
+```
+
+NoSocial:
 
 ``` json
 {
