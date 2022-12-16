@@ -81,7 +81,6 @@ Return:
             "id": "0x123",
             "category": "default",
             "value": "Lens",
-            "bio": "This is xxx",
             "url": ".../...",
             "description": "..., ..., ..."
         },
@@ -89,7 +88,6 @@ Return:
             "id": "0x456",
             "category": "hobby",
             "value": "Music",
-            "bio": "..., ...",
             "url": ".../...",
             "description": "..., ..., ..."
         }
@@ -102,7 +100,6 @@ Return:
             "category": "popularity", // Classification
             "provider": "NoSocial",
             "name": "100 Followers",
-            "bio": "This is xxx",
             "description": "..., ..., ...",
             "picture": "https://xxx",
             
@@ -126,8 +123,8 @@ Return:
             "rewardType": "token",
             "category": "publiction",
             "provider": "Lenster",
-            "name": "Active user",
-            "bio": "1.3 ETH",
+            "name": "1.3 ETH",
+            "benefitName": "Active user",
             "description": "..., ..., ...",
             "picture": "https://xxx",
             "providerPicture": "https://xxx",
@@ -153,8 +150,7 @@ Return:
         {
             "id": "0x123",
             "name": "Lenster",
-            "bio": "This is xxx", // lenster bio
-            "description": "..., ..., ...",
+            "description": "..., ..., ...", // lenster description
             "picture": "https://xxx",
             "url": ".../...",
 
@@ -172,7 +168,6 @@ Return:
                     "category": "popularity", 
                     "provider": "Lenster", // Must be provided by the app
                     "name": "100 Followers",
-                    "bio": "This is xxx",
                     "description": "..., ..., ...",
                     "picture": "https://xxx",
                     "url": ".../...",
@@ -204,8 +199,8 @@ Return:
             "rewardType": "token",
             "category": "publiction",
             "provider": "Lenster",
-            "name": "Active user",
-            "bio": "1.3 ETH",
+            "name": "1.3 ETH",
+            "benefitName": "Active User",
             "description": "..., ..., ...",
             "picture": "https://xxx",
             "providerPicture": "https://xxx",
@@ -216,7 +211,7 @@ Return:
             "tasks": [
                 {
                     "id": "0x123",
-                    "name": "Get 100 Followers achieve",
+                    "name": "100 Followers",
                     "bio": "..., ...",
                     "description": "...",
                     "url": "...",
