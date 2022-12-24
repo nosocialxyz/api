@@ -16,7 +16,13 @@ export async function inWhitelist(address: string): Promise<WhitelistResponse|Ba
       };
     }
 
-    const db = await loadDB(DBNAME)
+    const db = await loadDB(DBNAME);
+    if (db === null) {
+      return {
+        statusCode: 500,
+        message: 'Server internal error: load db failed.',
+      };
+    }
     const dbRequestor = createDbRequestor(db);
     const res = await dbRequestor.inWhitelist(address);
     const response: WhitelistResponse = {
@@ -43,7 +49,13 @@ export async function getProfileList(address: string): Promise<ProfileType[]|Bas
       };
     }
 
-    const db = await loadDB(DBNAME)
+    const db = await loadDB(DBNAME);
+    if (db === null) {
+      return {
+        statusCode: 500,
+        message: 'Server internal error: load db failed.',
+      };
+    }
     const dbRequestor = createDbRequestor(db);
     const res = await dbRequestor.getProfilesByAddress(address);
     return res;
