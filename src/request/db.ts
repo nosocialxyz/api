@@ -17,7 +17,7 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
       await db.dbHandler.collection(collName).insertOne(data);
     } catch (e: any) {
       if (e.code !== 11000)
-        logger.error(`Insert data failed, message:${e}`);
+        throw new Error(`Insert data failed, message:${e}`);
     }
   }
 
@@ -26,50 +26,30 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
       await db.dbHandler.collection(collName).insertMany(data);
     } catch (e: any) {
       if (e.code !== 11000)
-        logger.error(`Insert many data failed, message:${e}`);
+        throw new Error(`Insert many data failed, message:${e}`);
     }
   }
 
   const deleteOne = async (collName: string, query: any): Promise<void> => {
-    try {
-      await db.dbHandler.collection(collName).deleteOne(collName, query);
-    } catch (e: any) {
-      logger.error(`Delete one data failed, message:${e}`);
-    }
+    await db.dbHandler.collection(collName).deleteOne(collName, query);
   }
 
   const deleteMany = async (collName: string, query: any): Promise<void> => {
-    try {
-      await db.dbHandler.collection(collName).deleteMany(collName, query);
-    } catch (e: any) {
-      logger.error(`Delete many data failed, message:${e}`);
-    }
+    await db.dbHandler.collection(collName).deleteMany(collName, query);
   }
 
   const updateOne = async (collName: string, query: any, data: any): Promise<void> => {
-    try {
-      // upsert is true which means create new document where the indicated one doesn't exist.
-      const options = { upsert: true };
-      await db.dbHandler.collection(CURSOR_COLL).updateOne(query, { $set: data }, options);
-    } catch (e: any) {
-      logger.error(`Update one data failed, message:${e}`);
-    }
+    // upsert is true which means create new document where the indicated one doesn't exist.
+    const options = { upsert: true };
+    await db.dbHandler.collection(CURSOR_COLL).updateOne(query, { $set: data }, options);
   }
 
   const findOne = async (collName: string, query: any, options?: any): Promise<any> => {
-    try {
-      await db.dbHandler.collection(collName).findOne(query, options);
-    } catch (e: any) {
-      logger.error(`Update one data failed, message:${e}`);
-    }
+    return await db.dbHandler.collection(collName).findOne(query, options);
   }
 
   const findMany = async (collName: string, query: any, options?: any): Promise<any> => {
-    try {
-      await db.dbHandler.collection(collName).find(query, options);
-    } catch (e: any) {
-      logger.error(`Update one data failed, message:${e}`);
-    }
+    return await db.dbHandler.collection(collName).find(query, options);
   }
 
   const inWhitelist = async (address: string): Promise<boolean> => {

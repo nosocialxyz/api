@@ -14,7 +14,6 @@ async function main() {
     let url = new URL(req.url, `http://${req.headers.host}`)
     let resCode = 200
     let resBody: any = {}
-    let resMsg = ''
     const restfulHead = '/api/v0'
     const reqHead = url.pathname.substr(0, restfulHead.length)
     if (reqHead !== restfulHead) {
@@ -44,16 +43,22 @@ async function main() {
         };
         resCode = resBody.statusCode;
       } else {
-        resMsg = `Unknown request:${url.pathname}`;
-        resCode = 404;
+        resBody = {
+          statusCode: 404,
+          message: `Unknown request:${url.pathname}`,
+        }
+        resCode = resBody.statusCode;
       }
     } else if (req.method === 'POST') {
       // Do POST request
       if ('/get/profiles' === route) {
       } else if ('/get/publications' === route) {
       } else {
-        resMsg = `Unknown request:${url.pathname}`;
-        resCode = 404;
+        resBody = {
+          statusCode: 404,
+          message: `Unknown request:${url.pathname}`,
+        }
+        resCode = resBody.statusCode;
       }
     } else {
       // Other type request

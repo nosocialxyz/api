@@ -9,13 +9,14 @@ import {
 
 export async function inWhitelist(address: string): Promise<WhitelistResponse|BaseResponse> {
   try {
-    if (address === '')
-      throw 'Address cannot be empty!';
+    if (address === '') {
+      return {
+        statusCode: 400,
+        message: 'Address cannot be empty!',
+      };
+    }
 
     const db = await loadDB(DBNAME)
-    if (db === null)
-      throw `Load db:${DBNAME} failed.`;
-
     const dbRequestor = createDbRequestor(db);
     const res = await dbRequestor.inWhitelist(address);
     const response: WhitelistResponse = {
@@ -35,13 +36,14 @@ export async function inWhitelist(address: string): Promise<WhitelistResponse|Ba
 
 export async function getProfileList(address: string): Promise<ProfileType[]|BaseResponse> {
   try {
-    if (address === '')
-      throw 'Address cannot be empty!';
+    if (address === '') {
+      return {
+        statusCode: 400,
+        message: 'Address cannot be empty!',
+      };
+    }
 
     const db = await loadDB(DBNAME)
-    if (db === null)
-      throw `Load db:${DBNAME} failed.`;
-
     const dbRequestor = createDbRequestor(db);
     const res = await dbRequestor.getProfilesByAddress(address);
     return res;
