@@ -1,77 +1,73 @@
+import express, {NextFunction,Request,Response} from 'express';
 import { logger } from './utils/logger';
 import { PORT, DBNAME } from './config';
-import { loadDB } from './db';
-import { AppContext } from './types/context.d';
-import * as apis from './request';
+import timeout from 'connect-timeout';
+import * as services from './services';
+import * as bodyParser from 'body-parser';
 
-const http = require('http');
+const app = express();
+const maxErrorHandlingCount = 10;
+let errorHandlingCount = 0;
 
-async function main() {
-  const server = http.createServer();
+const errorHandler = (
+  err: any,
+  _req: Request | null,
+  res: Response | null,
+  _next: any
+) => {
+  const errMsg: string = '' + err ? err.message : 'Unknown error';
+  logger.error(`☄️ : Error catched: ${errMsg}.`);
+  if (res) {
+    res.status(400).send({
+      status: 'error',
+      message: errMsg,
+    });
+  }
 
-  const db = await loadDB(DBNAME);
-  server.on('request', async(req: any, res: any) => {
-    let url = new URL(req.url, `http://${req.headers.host}`)
-    let resCode = 200
-    let resBody: any = {}
-    const restfulHead = '/api/v0'
-    const reqHead = url.pathname.substr(0, restfulHead.length)
-    if (reqHead !== restfulHead) {
-      resBody = {
-        statusCode: 404,
-        message: `unknown request:${url.pathname}`
-      }
-      res.writeHead(404, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify(resBody));
-      return
+  logger.warn('📡 : Connection reinitialized.');
+};
+
+const loggingResponse = (_: Request, res: Response, next: NextFunction) => {
+  const send = res.send;
+  res.send = function (...args: any) {
+    if (args.length > 0) {
+      logger.info(`  ↪ [${res.statusCode}]: ${args[0]}`);
     }
-    const route = url.pathname.substr(restfulHead.length);
-    if (req.method === 'GET') {
-      // Do GET request
-      if ('/account/whitelist' === route) {
-        const address = url.searchParams.get('address') || '';
-        resBody = await apis.inWhitelist(address);
-        resCode = resBody.statusCode;
-      } else if ('/account/profiles' === route) {
-        const address = url.searchParams.get('address') || '';
-        resBody = await apis.getProfileList(address);
-        resCode = resBody.statusCode;
-      } else if ('/hello' === route) {
-        resBody = {
-          statusCode: 200,
-          message: 'Hello, nosocial api!',
-        };
-        resCode = resBody.statusCode;
-      } else {
-        resBody = {
-          statusCode: 404,
-          message: `Unknown request:${url.pathname}`,
-        }
-        resCode = resBody.statusCode;
-      }
-    } else if (req.method === 'POST') {
-      // Do POST request
-      if ('/get/profiles' === route) {
-      } else if ('/get/publications' === route) {
-      } else {
-        resBody = {
-          statusCode: 404,
-          message: `Unknown request:${url.pathname}`,
-        }
-        resCode = resBody.statusCode;
-      }
-    } else {
-      // Other type request
-    }
-    res.writeHead(resCode, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify(resBody));
-  });
-  server.listen(PORT, '0.0.0.0');
-  logger.info(`Start api on port:${PORT} successfully`)
-}
+    send.call(res, ...args);
+  } as any;
+  next();
+};
 
-main()
-  .catch((e: any) => {
-    logger.error(e.message);
+app.use(bodyParser.json({limit: '50mb'}));
+app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
+app.use(bodyParser.json());
+app.use(loggingResponse);
+
+// API timeout handler
+app.use(timeout('600s'));
+
+// Get routes
+app.get('/api/v0/ping', services.base.ping);
+app.get('/api/v0/account/whitelist', services.base.whitelist);
+app.get('/api/v0/account/profiles', services.base.profiles);
+
+// Error handler
+app.use(errorHandler);
+process.on('uncaughtException', (err: Error) => {
+  logger.error(`☄️  Uncaught exception ${err.message}`);
+  if (++errorHandlingCount <= maxErrorHandlingCount) {
+    errorHandler(err, null, null, null);
+  } else {
+    logger.error(
+      'Reach max error handling count, just exit and waitinng for restart'
+    );
+    // eslint-disable-next-line no-process-exit
     process.exit(1);
-  })
+  }
+});
+
+app.listen(PORT, () => {
+  logger.info(
+    `⚡️ : Nosocial API is running at https://localhost:${PORT}`
+  );
+});
