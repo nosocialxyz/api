@@ -62,8 +62,6 @@ export const INFURA_SECRET = getParam('INFURA_SECRET');
 
 export const PORT = getParam('PORT');
 
-export const DB_PATH = getParam('DB_PATH');
-
 export const MONGO_SERVER = getParam('MONGO_SERVER');
 
 export const LENS_DATA_LIMIT = 50;
