@@ -26,7 +26,7 @@ const getParamOrExit = (name: string) => {
 const getParam = (name: string) => {
   const param = process.env[name];
   if (!param) {
-    return null;
+    return '';
   }
   return param;
 };
@@ -60,15 +60,15 @@ export const INFURA_PROJECT_ID = getParam('INFURA_PROJECT_ID');
 
 export const INFURA_SECRET = getParam('INFURA_SECRET');
 
-export const PORT = 12345;
+export const PORT = getParam('PORT');
 
-export const DB_PATH = "/opt/nosocial/db";
+export const DB_PATH = getParam('DB_PATH');
 
-export const mongoServURI = 'mongodb://localhost:27017';
+export const MONGO_SERVER = getParam('MONGO_SERVER');
 
 export const LENS_DATA_LIMIT = 50;
 
-export const DBNAME = 'test2';
+export const DBNAME = getParam('DBNAME');
 export const PROFILE_COLL = 'profile';
 export const PUBLICATION_COLL = 'publication';
 export const CURSOR_COLL = 'cursor';

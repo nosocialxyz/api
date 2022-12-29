@@ -1,5 +1,5 @@
 import { MongoClient } from "mongodb";
-import { mongoServURI } from "../config";
+import { MONGO_SERVER } from "../config";
 import { logger } from "../utils/logger";
 import { sleep } from '../utils';
 
@@ -42,7 +42,7 @@ export class MongoDB {
   async connect(): Promise<boolean> {
     try {
       // Create a new MongoClient
-      this.client = new MongoClient(mongoServURI);
+      this.client = new MongoClient(MONGO_SERVER);
       // Connect the client to the server (optional starting in v4.7)
       await this.client.connect();
       // Establish and verify connection
