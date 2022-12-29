@@ -27,11 +27,13 @@ const errorHandler = (
   logger.warn('📡 : Connection reinitialized.');
 };
 
-const loggingResponse = (_: Request, res: Response, next: NextFunction) => {
+const loggingResponse = (req: Request, res: Response, next: NextFunction) => {
   const send = res.send;
+  logger.info(`Request: method:${req.method}, path:${req.path}`);
   res.send = function (...args: any) {
     if (args.length > 0) {
-      logger.info(`  ↪ [${res.statusCode}]: ${args[0]}`);
+      //logger.info(`  ↪ [${res.statusCode}]: ${args[0]}`);
+      logger.info(`  ↪ [${res.statusCode}]`);
     }
     send.call(res, ...args);
   } as any;

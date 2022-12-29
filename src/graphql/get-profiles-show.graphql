@@ -1,7 +1,7 @@
 query Profiles($request: ProfileQueryRequest!) {
   profiles(request: $request) {
     items {
-      ...NSProfileFields
+      ...ShowProfileFields
     }
     pageInfo {
       ...CommonPaginatedResultInfoFields

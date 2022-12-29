@@ -1,5 +1,6 @@
 import { DBNAME } from '../config';
 import { createDbRequestor } from './db';
+import { createLensApiRequestor } from './lens-api';
 import { withDbReady } from './utils';
 import { MongoDB } from '../db';
 import { NextFunction, Request, Response} from 'express';
@@ -30,11 +31,10 @@ export const base = {
     },next);
   },
   profiles: async (req: Request, res: Response, next: NextFunction) => {
-    withDbReady(async (db: MongoDB) => {
-      const dbRequestor = createDbRequestor(db);
-      const address = String(req.query['address']);
-      const profiles = await dbRequestor.getProfilesByAddress(address);
-      res.json(profiles);
-    }, next);
+    const lensApi = createLensApiRequestor();
+    const address = String(req.query['address']);
+    const profiles = await lensApi.getProfilesByAddress(address);
+    res.json(profiles);
+    next();
   },
 };

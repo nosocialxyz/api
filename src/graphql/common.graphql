@@ -54,6 +54,12 @@ fragment ProfileFields1 on Profile {
   ownedBy
 }
 
+fragment ShowProfileFields on Profile {
+  id
+  name
+  handle
+}
+
 fragment NSProfileFields on Profile {
   _id: id
   name
