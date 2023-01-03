@@ -1,6 +1,11 @@
 import { logger } from "../utils/logger";
 import { loadDB, MongoDB } from "../db";
-import { DbRequestor, ProfileType, PostType } from "../types/database.d";
+import {
+  DbRequestor,
+  ProfileType,
+  PostType,
+  AIResultType,
+} from "../types/database.d";
 import {
   PROFILE_COLL,
   PUBLICATION_COLL,
@@ -114,6 +119,24 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
     return await res.toArray();
   };
 
+  const getAIResultByProfile = async (
+    profile: string
+  ): Promise<AIResultType[]> => {
+    const res = await db.dbHandler.collection(AI_COLL).aggregate([
+      {
+        $match: { profile: profile },
+      },
+    ]);
+    if (res === null) {
+      logger.info(`⛓ [db]: No post with profile ${profile}`);
+      return [];
+    }
+
+    logger.info(`⛓ [db]: sssssss ${JSON.stringify(res)}`);
+
+    return await res.toArray();
+  };
+
   const updateAIResultByPost = async (result: any): Promise<boolean> => {
     try {
       await db.dbHandler.collection(AI_COLL).insertOne(result);
@@ -137,5 +160,6 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
     getProfilesByAddress,
     getPostByProfile,
     updateAIResultByPost,
+    getAIResultByProfile,
   };
 }

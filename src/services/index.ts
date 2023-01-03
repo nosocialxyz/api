@@ -63,6 +63,15 @@ export const ai = {
       res.json(contents);
     }, next);
   },
+  fetchAIResults: async (req: Request, res: Response, next: NextFunction) => {
+    withDbReady(async (db: MongoDB) => {
+      const dbRequestor = createDbRequestor(db);
+      const profile = String(req.query["profile"]);
+      logger.info(`⛓ [ai]: Query all ai result with profile ${profile}`);
+      const contents = await dbRequestor.getAIResultByProfile(profile);
+      res.json(contents);
+    }, next);
+  },
   updateAIResults: async (req: Request, res: Response, next: NextFunction) => {
     withDbReady(async (db: MongoDB) => {
       const dbRequestor = createDbRequestor(db);
@@ -73,7 +82,8 @@ export const ai = {
         const result = {
           _id: id,
           profile: profileID,
-          result: req.body[id],
+          raw: req.body["raw"][id],
+          refined: req.body["refined"][id],
         };
         await dbRequestor.updateAIResultByPost(result);
       }

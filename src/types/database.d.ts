@@ -10,6 +10,7 @@ export interface DbRequestor {
   getProfilesByAddress: (address: string) => Promise<ProfileType[]>;
   getPostByProfile: (profile: string) => Promise<PostType[]>;
   updateAIResultByPost: (result: any) => Promise<boolean>;
+  getAIResultByProfile: (profile: string) => Promise<AIResultType[]>;
 }
 
 export interface BaseResponse {
@@ -30,4 +31,9 @@ export interface ProfileType {
 export interface PostType {
   id: string;
   content: string;
+}
+
+export interface AIResultType {
+  id: string;
+  result: string[];
 }
