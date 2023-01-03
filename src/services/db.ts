@@ -91,16 +91,9 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
   };
 
   const getContentByProfile = async (profile: string): Promise<PostType[]> => {
-    const res = await db.dbHandler.collection(PUBLICATION_COLL).find([
-      { "profile.id": "0x01" },
-      {
-        $project: {
-          _id: 0,
-          id: "$_id",
-          content: "$metadata.content",
-        },
-      },
-    ]);
+    const res = await db.dbHandler
+      .collection(PUBLICATION_COLL)
+      .find({ "profile.id": "0x01", __typename: "Post" });
     if (res === null) {
       logger.info(`⛓ [db]: No post with profile ${profile}`);
       return [];
