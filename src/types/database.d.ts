@@ -8,7 +8,8 @@ export interface DbRequestor {
   findMany: (collName: string, query: any) => Promise<any>;
   inWhitelist: (address: string) => Promise<boolean>;
   getProfilesByAddress: (address: string) => Promise<ProfileType[]>;
-  getContentByProfile: (profile: string) => Promise<PostType[]>;
+  getPostByProfile: (profile: string) => Promise<PostType[]>;
+  updateAIResultByPost: (result: any) => Promise<boolean>;
 }
 
 export interface BaseResponse {

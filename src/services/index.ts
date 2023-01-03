@@ -58,21 +58,29 @@ export const ai = {
       const dbRequestor = createDbRequestor(db);
       const profile = String(req.query["profile"]);
       logger.info(`⛓ [ai]: Query all post with profile ${profile}`);
-      const contents = await dbRequestor.getContentByProfile(profile);
-      logger.info(`⛓ [ai]:contents ${contents}`);
+      const contents = await dbRequestor.getPostByProfile(profile);
+      logger.info(`⛓ [ai]: All posts are ${contents}`);
       res.json(contents);
     }, next);
   },
-  // updateAIResults: async (req: Request, res: Response, next: NextFunction) => {
-  //   withDbReady(async (db: MongoDB) => {
-  //     const dbRequestor = createDbRequestor(db);
-  //     const profile = String(req.query["profile"]);
-  //     const inWhitelist = await dbRequestor.inWhitelist(address);
-  //     res.json({
-  //       statusCode: 200,
-  //       message: "success",
-  //       inWhitelist: inWhitelist,
-  //     });
-  //   }, next);
-  // },
+  updateAIResults: async (req: Request, res: Response, next: NextFunction) => {
+    withDbReady(async (db: MongoDB) => {
+      const dbRequestor = createDbRequestor(db);
+      const postIDs = req.body["post_ids"];
+      const profileID = req.body["profile"];
+      for (const id in postIDs) {
+        logger.info(`⛓ [ai]: update ai result for post id ${id}`);
+        const result = {
+          _id: id,
+          profile: profileID,
+          result: req.body[id],
+        };
+        await dbRequestor.updateAIResultByPost(result);
+      }
+      res.json({
+        statusCode: 200,
+        message: "success",
+      });
+    }, next);
+  },
 };

@@ -54,6 +54,8 @@ app.get("/api/v0/account/whitelist", services.base.whitelist);
 app.get("/api/v0/account/profiles", services.base.profiles);
 app.get("/api/v0/publication/post", services.ai.fetchAllPosts);
 
+app.post("/api/v0/ai/results", services.ai.updateAIResults);
+
 // Error handler
 app.use(errorHandler);
 process.on("uncaughtException", (err: Error) => {

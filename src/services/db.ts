@@ -6,6 +6,7 @@ import {
   PUBLICATION_COLL,
   CURSOR_COLL,
   WHITELIST_COLL,
+  AI_COLL,
 } from "../config";
 
 export function createDbRequestor(db: MongoDB): DbRequestor {
@@ -90,7 +91,7 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
     return await res.toArray();
   };
 
-  const getContentByProfile = async (profile: string): Promise<PostType[]> => {
+  const getPostByProfile = async (profile: string): Promise<PostType[]> => {
     const res = await db.dbHandler.collection(PUBLICATION_COLL).aggregate([
       {
         $match: { "profile.id": profile, __typename: "Post" },
@@ -113,6 +114,17 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
     return await res.toArray();
   };
 
+  const updateAIResultByPost = async (result: any): Promise<boolean> => {
+    try {
+      await db.dbHandler.collection(AI_COLL).insertOne(result);
+      return true;
+    } catch (e: any) {
+      logger.warn("⛓ [db]: Something wrong with update ai result");
+      if (e.code !== 11000) throw new Error(`Insert data failed, message:${e}`);
+    }
+    return false;
+  };
+
   return {
     insertOne,
     insertMany,
@@ -123,6 +135,7 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
     findMany,
     inWhitelist,
     getProfilesByAddress,
-    getContentByProfile,
+    getPostByProfile,
+    updateAIResultByPost,
   };
 }
