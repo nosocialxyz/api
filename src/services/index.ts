@@ -68,7 +68,7 @@ export const ai = {
       const dbRequestor = createDbRequestor(db);
       const postIDs = req.body["post_ids"];
       const profileID = req.body["profile"];
-      for (const id in postIDs) {
+      for (const id of postIDs) {
         logger.info(`⛓ [ai]: update ai result for post id ${id}`);
         const result = {
           _id: id,
