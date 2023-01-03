@@ -108,6 +108,8 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
       return [];
     }
 
+    logger.info(`⛓ [db]: ${res}`);
+
     return await res.toArray();
   };
 
