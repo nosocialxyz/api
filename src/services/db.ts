@@ -1,25 +1,27 @@
-import { logger } from '../utils/logger';
-import { loadDB, MongoDB } from '../db';
-import { 
+import { logger } from "../utils/logger";
+import { loadDB, MongoDB } from "../db";
+import {
   DbRequestor,
   ProfileType,
-} from '../types/database.d';
-import { 
+  PostType,
+  AIResultType,
+} from "../types/database.d";
+import {
   PROFILE_COLL,
   PUBLICATION_COLL,
   CURSOR_COLL,
   WHITELIST_COLL,
-} from '../config';
+  AI_COLL,
+} from "../config";
 
 export function createDbRequestor(db: MongoDB): DbRequestor {
   const insertOne = async (collName: string, data: any): Promise<void> => {
     try {
       await db.dbHandler.collection(collName).insertOne(data);
     } catch (e: any) {
-      if (e.code !== 11000)
-        throw new Error(`Insert data failed, message:${e}`);
+      if (e.code !== 11000) throw new Error(`Insert data failed, message:${e}`);
     }
-  }
+  };
 
   const insertMany = async (collName: string, data: any): Promise<void> => {
     try {
@@ -28,57 +30,130 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
       if (e.code !== 11000)
         throw new Error(`Insert many data failed, message:${e}`);
     }
-  }
+  };
 
   const deleteOne = async (collName: string, query: any): Promise<void> => {
     await db.dbHandler.collection(collName).deleteOne(collName, query);
-  }
+  };
 
   const deleteMany = async (collName: string, query: any): Promise<void> => {
     await db.dbHandler.collection(collName).deleteMany(collName, query);
-  }
+  };
 
-  const updateOne = async (collName: string, query: any, data: any): Promise<void> => {
+  const updateOne = async (
+    collName: string,
+    query: any,
+    data: any
+  ): Promise<void> => {
     // upsert is true which means create new document where the indicated one doesn't exist.
     const options = { upsert: true };
-    await db.dbHandler.collection(CURSOR_COLL).updateOne(query, { $set: data }, options);
-  }
+    await db.dbHandler
+      .collection(CURSOR_COLL)
+      .updateOne(query, { $set: data }, options);
+  };
 
-  const findOne = async (collName: string, query: any, options?: any): Promise<any> => {
+  const findOne = async (
+    collName: string,
+    query: any,
+    options?: any
+  ): Promise<any> => {
     return await db.dbHandler.collection(collName).findOne(query, options);
-  }
+  };
 
-  const findMany = async (collName: string, query: any, options?: any): Promise<any> => {
+  const findMany = async (
+    collName: string,
+    query: any,
+    options?: any
+  ): Promise<any> => {
     return await db.dbHandler.collection(collName).find(query, options);
-  }
+  };
 
   const inWhitelist = async (address: string): Promise<boolean> => {
-    const res = await db.dbHandler.collection(WHITELIST_COLL).findOne({_id:address});
+    const res = await db.dbHandler
+      .collection(WHITELIST_COLL)
+      .findOne({ _id: address });
     return res !== null;
-  }
+  };
 
-  const getProfilesByAddress = async (address: string): Promise<ProfileType[]> => {
-    const res = await db.dbHandler.collection(PROFILE_COLL).aggregate(
-      [
-        {
-          $match: {ownedBy: address},
+  const getProfilesByAddress = async (
+    address: string
+  ): Promise<ProfileType[]> => {
+    const res = await db.dbHandler.collection(PROFILE_COLL).aggregate([
+      {
+        $match: { ownedBy: address },
+      },
+      {
+        $project: {
+          _id: 0,
+          id: "$_id",
+          name: 1,
+          handle: 1,
         },
-        {
-          $project:
-          {
-            _id: 0,
-            "id": "$_id",
-            name:1,
-            handle:1,
-          },
-        },
-      ]
-    )
-    if (res === null)
-      return [];
+      },
+    ]);
+    if (res === null) return [];
 
     return await res.toArray();
-  }
+  };
+
+  const getPostByProfile = async (profile: string): Promise<PostType[]> => {
+    const res = await db.dbHandler.collection(PUBLICATION_COLL).aggregate([
+      {
+        $match: { "profile.id": profile, __typename: "Post" },
+      },
+      {
+        $project: {
+          _id: 0,
+          id: "$_id",
+          content: "$metadata.content",
+        },
+      },
+    ]);
+    if (res === null) {
+      logger.info(`⛓ [db]: No post with profile ${profile}`);
+      return [];
+    }
+
+    logger.info(`⛓ [db]: sssssss ${JSON.stringify(res)}`);
+
+    return await res.toArray();
+  };
+
+  const getAIResultByProfile = async (
+    profile: string
+  ): Promise<AIResultType[]> => {
+    const res = await db.dbHandler.collection(AI_COLL).aggregate([
+      {
+        $match: { profile: profile },
+      },
+      {
+        $project: {
+          _id: 0,
+          id: "$_id",
+          refined: 1,
+        },
+      },
+    ]);
+    if (res === null) {
+      logger.info(`⛓ [db]: No post with profile ${profile}`);
+      return [];
+    }
+
+    logger.info(`⛓ [db]: sssssss ${JSON.stringify(res)}`);
+
+    return await res.toArray();
+  };
+
+  const updateAIResultByPost = async (result: any): Promise<boolean> => {
+    try {
+      await db.dbHandler.collection(AI_COLL).insertOne(result);
+      return true;
+    } catch (e: any) {
+      logger.warn("⛓ [db]: Something wrong with update ai result");
+      if (e.code !== 11000) throw new Error(`Insert data failed, message:${e}`);
+    }
+    return false;
+  };
 
   return {
     insertOne,
@@ -90,5 +165,8 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
     findMany,
     inWhitelist,
     getProfilesByAddress,
-  }
+    getPostByProfile,
+    updateAIResultByPost,
+    getAIResultByProfile,
+  };
 }
