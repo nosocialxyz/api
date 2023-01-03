@@ -4,6 +4,7 @@ import { createLensApiRequestor } from "./lens-api";
 import { withDbReady } from "./utils";
 import { MongoDB } from "../db";
 import { NextFunction, Request, Response } from "express";
+import { logger } from "../utils/logger";
 import {
   WhitelistResponse,
   BaseResponse,
@@ -56,6 +57,7 @@ export const ai = {
     withDbReady(async (db: MongoDB) => {
       const dbRequestor = createDbRequestor(db);
       const profile = String(req.query["profile"]);
+      logger.info(`⛓ [ai]: Query all post with profile ${profile}`);
       const contents = await dbRequestor.getContentByProfile(profile);
       res.json(contents);
     }, next);
