@@ -108,7 +108,7 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
       return [];
     }
 
-    logger.info(`⛓ [db]: ${res}`);
+    logger.info(`⛓ [db]: No post with profile ${profile}`);
 
     return await res.toArray();
   };

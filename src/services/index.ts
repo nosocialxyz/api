@@ -59,6 +59,7 @@ export const ai = {
       const profile = String(req.query["profile"]);
       logger.info(`⛓ [ai]: Query all post with profile ${profile}`);
       const contents = await dbRequestor.getContentByProfile(profile);
+      logger.info(`⛓ [ai]:contents ${contents}`);
       res.json(contents);
     }, next);
   },
