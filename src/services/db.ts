@@ -126,6 +126,13 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
       {
         $match: { profile: profile },
       },
+      {
+        $project: {
+          _id: 0,
+          id: "$_id",
+          refined: 1,
+        },
+      },
     ]);
     if (res === null) {
       logger.info(`⛓ [db]: No post with profile ${profile}`);
