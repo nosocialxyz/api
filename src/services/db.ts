@@ -93,7 +93,7 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
   const getContentByProfile = async (profile: string): Promise<PostType[]> => {
     const res = await db.dbHandler.collection(PUBLICATION_COLL).aggregate([
       {
-        $match: { "profile.id": profile, __typename: "Post" },
+        $match: { "profile.id": "0x01", __typename: "Post" },
       },
       {
         $project: {
