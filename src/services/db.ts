@@ -5,6 +5,7 @@ import {
   ProfileType,
   PostType,
   AIResultType,
+  WaitingProfileType,
 } from "../types/database.d";
 import {
   PROFILE_COLL,
@@ -12,6 +13,7 @@ import {
   CURSOR_COLL,
   WHITELIST_COLL,
   AI_COLL,
+  WAITING_COLL,
 } from "../config";
 
 export function createDbRequestor(db: MongoDB): DbRequestor {
@@ -155,6 +157,49 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
     return false;
   };
 
+  const pushProfileIntoWaiting = async (profile: any): Promise<boolean> => {
+    try {
+      const waiting = {
+        profile: profile,
+        status: "NotStarted",
+      };
+      await db.dbHandler.collection(WAITING_COLL).insertOne(waiting);
+      return true;
+    } catch (e: any) {
+      logger.warn("⛓ [db]: Something wrong with insert new waiting profile");
+      if (e.code !== 11000) throw new Error(`Insert data failed, message:${e}`);
+    }
+    return false;
+  };
+
+  const fetchNextWaitingProfile = async (): Promise<WaitingProfileType> => {
+    const res = await db.dbHandler.collection(WAITING_COLL).findOne(
+      { status: "NotStarted" },
+      {
+        $project: {
+          _id: 0,
+          id: "$_id",
+          profile: 1,
+        },
+      }
+    );
+    if (res === null) {
+      logger.info(`⛓ [db]: No waiting profile`);
+      return res;
+    }
+    await db.dbHandler
+      .collection(CURSOR_COLL)
+      .updateOne({ _id: res.id }, { $set: { status: "Processing" } });
+    return res;
+  };
+
+  const updateWaitingProfileStatus = async (id: string): Promise<boolean> => {
+    await db.dbHandler
+      .collection(CURSOR_COLL)
+      .updateOne({ _id: id }, { $set: { status: "Finished" } });
+    return true;
+  };
+
   return {
     insertOne,
     insertMany,
@@ -168,5 +213,8 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
     getPostByProfile,
     updateAIResultByPost,
     getAIResultByProfile,
+    pushProfileIntoWaiting,
+    fetchNextWaitingProfile,
+    updateWaitingProfileStatus,
   };
 }

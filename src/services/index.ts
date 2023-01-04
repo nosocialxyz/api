@@ -41,18 +41,39 @@ export const base = {
 };
 
 export const ai = {
-  // nextProfile: async (req: Request, res: Response, next: NextFunction) => {
-  //   withDbReady(async (db: MongoDB) => {
-  //     const dbRequestor = createDbRequestor(db);
-  //     // const profile = String(req.query["profile"]);
-  //     const inWhitelist = await dbRequestor.inWhitelist(address);
-  //     res.json({
-  //       statusCode: 200,
-  //       message: "success",
-  //       inWhitelist: inWhitelist,
-  //     });
-  //   }, next);
-  // },
+  pushProfile: async (req: Request, res: Response, next: NextFunction) => {
+    withDbReady(async (db: MongoDB) => {
+      const dbRequestor = createDbRequestor(db);
+      const profile = String(req.query["profile"]);
+      logger.info(`⛓ [ai]: Push ${profile} into waiting list`);
+      await dbRequestor.pushProfileIntoWaiting(profile);
+      res.json({
+        statusCode: 200,
+        message: "success",
+      });
+    }, next);
+  },
+  fetchProfile: async (req: Request, res: Response, next: NextFunction) => {
+    withDbReady(async (db: MongoDB) => {
+      const dbRequestor = createDbRequestor(db);
+      const next_waiting = await dbRequestor.fetchNextWaitingProfile();
+      logger.info(`⛓ [ai]: Next waiting profile is ${next_waiting}`);
+      res.json(next_waiting);
+    }, next);
+  },
+  updateProfile: async (req: Request, res: Response, next: NextFunction) => {
+    withDbReady(async (db: MongoDB) => {
+      const dbRequestor = createDbRequestor(db);
+      const waiting_id = req.body["waiting_id"];
+      const profile = req.body["profile"];
+      logger.info(`⛓ [ai]: Update ${profile} as finshed`);
+      await dbRequestor.updateWaitingProfileStatus(waiting_id, profile);
+      res.json({
+        statusCode: 200,
+        message: "success",
+      });
+    }, next);
+  },
   fetchAllPosts: async (req: Request, res: Response, next: NextFunction) => {
     withDbReady(async (db: MongoDB) => {
       const dbRequestor = createDbRequestor(db);
