@@ -176,14 +176,17 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
   const fetchNextWaitingProfile = async (): Promise<WaitingProfileType> => {
     const res = await db.dbHandler
       .collection(WAITING_COLL)
-      .findOne({ status: "NotStarted" });
+      .findOne(
+        { status: "NotStarted" },
+        { projection: { stats: 0, profile: 1, _id: 0, id: "$_id" } }
+      );
     if (res === null) {
       logger.info(`⛓ [db]: No waiting profile`);
       return res;
     }
     await db.dbHandler
       .collection(WAITING_COLL)
-      .updateOne({ _id: res._id }, { $set: { status: "Processing" } });
+      .updateOne({ _id: res.id }, { $set: { status: "Processing" } });
     return res;
   };
 
