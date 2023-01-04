@@ -180,6 +180,7 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
           _id: 0,
           id: "$_id",
           profile: 1,
+          status: 0,
         },
       }
     );
@@ -188,14 +189,14 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
       return res;
     }
     await db.dbHandler
-      .collection(CURSOR_COLL)
+      .collection(WAITING_COLL)
       .updateOne({ _id: res.id }, { $set: { status: "Processing" } });
     return res;
   };
 
   const updateWaitingProfileStatus = async (id: string): Promise<boolean> => {
     await db.dbHandler
-      .collection(CURSOR_COLL)
+      .collection(WAITING_COLL)
       .updateOne({ _id: id }, { $set: { status: "Finished" } });
     return true;
   };
