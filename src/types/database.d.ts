@@ -44,4 +44,5 @@ export interface AIResultType {
 export interface WaitingProfileType {
   id: string;
   profile: string;
+  status: string;
 }
