@@ -15,6 +15,7 @@ import {
   AI_COLL,
   WAITING_COLL,
 } from "../config";
+var ObjectID = require("mongodb").ObjectID;
 
 export function createDbRequestor(db: MongoDB): DbRequestor {
   const insertOne = async (collName: string, data: any): Promise<void> => {
@@ -190,14 +191,14 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
     }
     await db.dbHandler
       .collection(WAITING_COLL)
-      .updateOne({ _id: res.id }, { $set: { status: "Processing" } });
+      .updateOne({ _id: ObjectID(res.id) }, { $set: { status: "Processing" } });
     return res;
   };
 
   const updateWaitingProfileStatus = async (id: string): Promise<boolean> => {
     await db.dbHandler
       .collection(WAITING_COLL)
-      .updateOne({ _id: id }, { $set: { status: "Finished" } });
+      .updateOne({ _id: ObjectID(id) }, { $set: { status: "Finished" } });
     return true;
   };
 
