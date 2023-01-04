@@ -178,7 +178,7 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
       .collection(WAITING_COLL)
       .findOne(
         { status: "NotStarted" },
-        { projection: { stats: 0, profile: 1, _id: 0, id: "$_id" } }
+        { projection: { status: 0, profile: 1, _id: 0, id: "$_id" } }
       );
     if (res === null) {
       logger.info(`⛓ [db]: No waiting profile`);
