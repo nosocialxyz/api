@@ -13,7 +13,7 @@ export interface DbRequestor {
   getAIResultByProfile: (profile: string) => Promise<AIResultType[]>;
   pushProfileIntoWaiting: (profile: string) => Promise<boolean>;
   fetchNextWaitingProfile: () => Promise<WaitingProfileType>;
-  updateWaitingProfileStatus: (id: string, profile: string) => Promise<boolean>;
+  updateWaitingProfileStatus: (id: string) => Promise<boolean>;
 }
 
 export interface BaseResponse {

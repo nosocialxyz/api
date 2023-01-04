@@ -64,10 +64,9 @@ export const ai = {
   updateProfile: async (req: Request, res: Response, next: NextFunction) => {
     withDbReady(async (db: MongoDB) => {
       const dbRequestor = createDbRequestor(db);
-      const waiting_id = req.body["waiting_id"];
-      const profile = req.body["profile"];
-      logger.info(`⛓ [ai]: Update ${profile} as finshed`);
-      await dbRequestor.updateWaitingProfileStatus(waiting_id, profile);
+      const waiting_id = String(req.query["id"]);
+      logger.info(`⛓ [ai]: Update ${waiting_id} as finshed`);
+      await dbRequestor.updateWaitingProfileStatus(waiting_id);
       res.json({
         statusCode: 200,
         message: "success",
