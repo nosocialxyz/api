@@ -61,6 +61,11 @@ app.post("/api/v0/ai/pushProfile", services.ai.pushProfile);
 app.get("/api/v0/ai/fetchProfile", services.ai.fetchProfile);
 app.post("/api/v0/ai/updateProfile", services.ai.updateProfile);
 
+app.post("/api/v0/ai/pushAITag", services.ai.pushAITag);
+app.get("/api/v0/ai/fetchNextAITag", services.ai.fetchNextAITag);
+
+app.post("/api/v0/nft/pushAINft", services.nft.pushAINft);
+
 // Error handler
 app.use(errorHandler);
 process.on("uncaughtException", (err: Error) => {
