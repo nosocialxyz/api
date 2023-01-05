@@ -57,6 +57,10 @@ app.get("/api/v0/publication/post", services.ai.fetchAllPosts);
 app.get("/api/v0/ai/fetchResults", services.ai.fetchAIResults);
 app.post("/api/v0/ai/updateResults", services.ai.updateAIResults);
 
+app.post("/api/v0/ai/pushProfile", services.ai.pushProfile);
+app.get("/api/v0/ai/fetchProfile", services.ai.fetchProfile);
+app.post("/api/v0/ai/updateProfile", services.ai.updateProfile);
+
 // Error handler
 app.use(errorHandler);
 process.on("uncaughtException", (err: Error) => {

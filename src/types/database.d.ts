@@ -11,6 +11,9 @@ export interface DbRequestor {
   getPostByProfile: (profile: string) => Promise<PostType[]>;
   updateAIResultByPost: (result: any) => Promise<boolean>;
   getAIResultByProfile: (profile: string) => Promise<AIResultType[]>;
+  pushProfileIntoWaiting: (profile: string) => Promise<boolean>;
+  fetchNextWaitingProfile: () => Promise<WaitingProfileType>;
+  updateWaitingProfileStatus: (id: string) => Promise<boolean>;
 }
 
 export interface BaseResponse {
@@ -36,4 +39,10 @@ export interface PostType {
 export interface AIResultType {
   id: string;
   result: string[];
+}
+
+export interface WaitingProfileType {
+  id: string;
+  profile: string;
+  status: string;
 }
