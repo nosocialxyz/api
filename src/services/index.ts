@@ -144,21 +144,24 @@ export const ai = {
 };
 
 export const nft = {
-  pushAINft: async (req: Request, res: Response, next: NextFunction) => {
+  pushNft: async (req: Request, res: Response, next: NextFunction) => {
     withDbReady(async (db: MongoDB) => {
       const dbRequestor = createDbRequestor(db);
       const data = {
         profile: req.body["profile"],
         name: req.body["name"],
         description: req.body["description"],
-        category: "AI",
-        provider: "NoSocial",
-        type: "SBT",
+        category: req.body["category"],
+        provider: req.body["provider"],
+        type: req.body["type"],
         pic_url: req.body["pic_url"],
+        nftid: req.body["nftid"],
         status: "NotMinted",
-        hash: null,
+        txhash: null,
       };
-      logger.info(`⛓ [ai]: Update AI tag NFT for profile ${data.profile}`);
+      logger.info(
+        `⛓ [ai]: Update NFT ${data.nftid} for profile ${data.profile}`
+      );
       await dbRequestor.insertOne(NFT_COLL, data);
       res.json({
         statusCode: 200,
