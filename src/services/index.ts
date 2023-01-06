@@ -148,14 +148,14 @@ export const nft = {
     withDbReady(async (db: MongoDB) => {
       const dbRequestor = createDbRequestor(db);
       const data = {
-        profile: req.body["profile"],
-        name: req.body["name"],
-        description: req.body["description"],
-        category: req.body["category"],
-        provider: req.body["provider"],
-        type: req.body["type"],
-        pic_url: req.body["pic_url"],
-        nftid: req.body["nftid"],
+        profile: String(req.body["profile"]),
+        name: String(req.body["name"]),
+        description: String(req.body["description"]),
+        category: String(req.body["category"]),
+        provider: String(req.body["provider"]),
+        type: String(req.body["type"]),
+        pic_url: String(req.body["pic_url"]),
+        nftid: String(req.body["nftid"]),
         status: "NotMinted",
         txhash: null,
       };
