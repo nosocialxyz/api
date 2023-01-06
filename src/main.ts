@@ -64,7 +64,7 @@ app.post("/api/v0/ai/updateProfile", services.ai.updateProfile);
 app.post("/api/v0/ai/pushAITag", services.ai.pushAITag);
 app.get("/api/v0/ai/fetchNextAITag", services.ai.fetchNextAITag);
 
-app.post("/api/v0/nft/pushAINft", services.nft.pushAINft);
+app.post("/api/v0/nft/pushNft", services.nft.pushNft);
 
 // Error handler
 app.use(errorHandler);
