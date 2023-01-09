@@ -72,7 +72,8 @@ Return:
         "attributes": {
             "location": "Brussels",
             "website": "https://nft.smurf.com/",
-            "twitter": "SmurfsSociety"
+            "twitter": "SmurfsSociety",
+            "join": "2022-11-01"
         }
     },
 
