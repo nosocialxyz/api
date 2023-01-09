@@ -37,4 +37,13 @@ export const base = {
     res.json(profiles);
     next();
   },
+  profileInfo: async (req: Request, res: Response, next: NextFunction) => {
+    withDbReady(async (db: MongoDB) => {
+      const lensApi = createLensApiRequestor();
+      const dbRequestor = createDbRequestor(db);
+      const profileId = String(req.query['id']);
+      const profile = await lensApi.getProfileById(profileId, dbRequestor);
+      res.json(profile);
+    },next);
+  },
 };

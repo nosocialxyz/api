@@ -70,6 +70,20 @@ fragment NSProfileFields on Profile {
   handle
   ownedBy
   interests
+  picture {
+    ... on MediaSet {
+      original {
+        url
+      }
+    }
+  }
+  coverPicture {
+    ... on MediaSet {
+      original {
+        url
+      }
+    }
+  }
   attributes {
     displayType
     traitType

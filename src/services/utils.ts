@@ -3,18 +3,18 @@ import { DBNAME } from '../config';
 import { loadDB } from '../db';
 
 export async function withDbReady(fn: Function, next: NextFunction) {
-  const db = await loadDB(DBNAME);
-  if (db === null) {
-    next(new Error(`{
-      statusCode: 500,
-      message: 'Load database failed.',
-    }`));
-    return;
-  }
   try {
+    const db = await loadDB(DBNAME);
+    if (db === null) {
+      next(new Error(`{
+        statusCode: 500,
+        message: 'Load database failed.',
+      }`));
+      return;
+    }
     await fn(db);
     next();
   } catch (e: any) {
-    next(e);
+    next(new Error('Load database failed.'));
   }
 }

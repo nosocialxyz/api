@@ -8,6 +8,7 @@ export interface DbRequestor {
   findMany: (collName: string, query: any) => Promise<any>;
   inWhitelist: (address: string) => Promise<boolean>;
   getProfilesByAddress: (address: string) => Promise<ProfileType[]>;
+  getEaliestCreatedPubDate: (id: string) => Promise<string>;
 }
 
 export interface BaseResponse {

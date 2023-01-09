@@ -20,6 +20,7 @@ const errorHandler = (
   if (res) {
     res.status(400).send({
       status: 'error',
+      statusCode: 400,
       message: errMsg,
     });
   }
@@ -52,6 +53,7 @@ app.use(timeout('600s'));
 app.get('/api/v0/ping', services.base.ping);
 app.get('/api/v0/account/whitelist', services.base.whitelist);
 app.get('/api/v0/account/profiles', services.base.profiles);
+app.get('/api/v0/account/profileInfo', services.base.profileInfo);
 
 // Error handler
 app.use(errorHandler);

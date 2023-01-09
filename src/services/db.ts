@@ -80,6 +80,21 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
     return await res.toArray();
   }
 
+  const getEaliestCreatedPubDate = async (id: string): Promise<string> => {
+    const res = await db.dbHandler.collection(PUBLICATION_COLL).find(
+      {
+        "profile.id": id,
+      },
+      {
+        createdAt: 1
+      }
+    ).sort({createdAt:1}).limit(1).toArray();
+    if (res.length > 0) {
+      return res[0].createdAt;
+    }
+    return '';
+  }
+
   return {
     insertOne,
     insertMany,
@@ -90,5 +105,6 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
     findMany,
     inWhitelist,
     getProfilesByAddress,
+    getEaliestCreatedPubDate,
   }
 }
