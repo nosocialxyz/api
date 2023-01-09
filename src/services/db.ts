@@ -219,7 +219,7 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
       return res;
     }
     await db.dbHandler
-      .collection(WAITING_COLL)
+      .collection(NFT_COLL)
       .updateOne({ _id: res.id }, { $set: { status: postStatus } });
     return res;
   };
