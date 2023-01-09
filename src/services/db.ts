@@ -14,6 +14,7 @@ import {
   WHITELIST_COLL,
   AI_COLL,
   WAITING_COLL,
+  NFT_COLL,
 } from "../config";
 var ObjectID = require("mongodb").ObjectID;
 
@@ -206,6 +207,38 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
     return true;
   };
 
+  const fetchNextWaitingNFT = async (
+    preStatus: string,
+    postStatus: string
+  ): Promise<any> => {
+    const res = await db.dbHandler
+      .collection(NFT_COLL)
+      .findOne({ status: preStatus }, { projection: { _id: 0, id: "$_id" } });
+    if (res === null) {
+      logger.info(`⛓ [db]: No waiting nft`);
+      return res;
+    }
+    await db.dbHandler
+      .collection(WAITING_COLL)
+      .updateOne({ _id: res.id }, { $set: { status: postStatus } });
+    return res;
+  };
+
+  const updateWaitingNFTStatus = async (
+    id: string,
+    status: string,
+    txhash: string,
+    tokenId: string
+  ): Promise<boolean> => {
+    await db.dbHandler
+      .collection(NFT_COLL)
+      .updateOne(
+        { _id: ObjectID(id) },
+        { $set: { status: status, txhash: txhash, tokenId: tokenId } }
+      );
+    return true;
+  };
+
   return {
     insertOne,
     insertMany,
@@ -222,5 +255,7 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
     pushProfileIntoWaiting,
     fetchNextWaitingProfile,
     updateWaitingProfileStatus,
+    fetchNextWaitingNFT,
+    updateWaitingNFTStatus,
   };
 }

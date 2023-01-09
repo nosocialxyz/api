@@ -17,6 +17,13 @@ export interface DbRequestor {
     postStatus: string
   ) => Promise<WaitingProfileType>;
   updateWaitingProfileStatus: (id: string, status: string) => Promise<boolean>;
+  fetchNextWaitingNFT: (preStatus: string, postStatus: string) => Promise<any>;
+  updateWaitingNFTStatus: (
+    id: string,
+    status: string,
+    txhash: string,
+    tokenId: string
+  ) => Promise<boolean>;
 }
 
 export interface BaseResponse {

@@ -158,11 +158,42 @@ export const nft = {
         nftid: String(req.body["nftid"]),
         status: "NotMinted",
         txhash: null,
+        tokenId: null,
       };
       logger.info(
         `⛓ [ai]: Update NFT ${data.nftid} for profile ${data.profile}`
       );
       await dbRequestor.insertOne(NFT_COLL, data);
+      res.json({
+        statusCode: 200,
+        message: "success",
+      });
+    }, next);
+  },
+  fetchNft: async (req: Request, res: Response, next: NextFunction) => {
+    withDbReady(async (db: MongoDB) => {
+      const dbRequestor = createDbRequestor(db);
+      const next_waiting = await dbRequestor.fetchNextWaitingNFT(
+        "NotMinted",
+        "Minting"
+      );
+      logger.info(`⛓ [ai]: Next waiting nft is ${next_waiting}`);
+      res.json(next_waiting);
+    }, next);
+  },
+  updateNft: async (req: Request, res: Response, next: NextFunction) => {
+    withDbReady(async (db: MongoDB) => {
+      const dbRequestor = createDbRequestor(db);
+      const waiting_id = String(req.query["id"]);
+      const txhash = String(req.query["txhash"]);
+      const tokenId = String(req.query["tokenId"]);
+      logger.info(`⛓ [ai]: Update ${waiting_id} as finshed`);
+      await dbRequestor.updateWaitingNFTStatus(
+        waiting_id,
+        "Minted",
+        txhash,
+        tokenId
+      );
       res.json({
         statusCode: 200,
         message: "success",
