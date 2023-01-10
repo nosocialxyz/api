@@ -214,7 +214,7 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
     const res = await db.dbHandler.collection(NFT_COLL).aggregate([
       {
         $lookup: {
-          from: PROFILE_COLL,
+          from: "profile",
           localField: "profile",
           foreignField: "_id",
           as: "profile_info",
