@@ -220,6 +220,11 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
           as: "profile_info",
         },
       },
+      {
+        $project: {
+          _id: 1,
+        },
+      },
     ]);
     logger.info(`⛓ [db]: query success`);
     if (res === null) {
