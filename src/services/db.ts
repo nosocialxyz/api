@@ -215,8 +215,8 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
       {
         $lookup: {
           from: PROFILE_COLL,
-          localField: "profile",
-          foreignField: "_id",
+          localField: "_id",
+          foreignField: "profile",
           as: "tmp",
         },
         $match: {
