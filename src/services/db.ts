@@ -215,15 +215,16 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
       {
         $lookup: {
           from: PROFILE_COLL,
-          localField: "_id",
-          foreignField: "profile",
-          as: "tmp",
+          localField: "profile",
+          foreignField: "_id",
+          as: "profile_info",
         },
+      },
+      {
         $match: {
           status: preStatus,
         },
       },
-      {},
     ]);
     logger.info(`⛓ [db]: query success`);
     if (res === null) {
