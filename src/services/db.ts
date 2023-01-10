@@ -14,6 +14,7 @@ import {
   WHITELIST_COLL,
   AI_COLL,
   WAITING_COLL,
+  NFT_COLL,
 } from "../config";
 var ObjectID = require("mongodb").ObjectID;
 
@@ -158,11 +159,14 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
     return false;
   };
 
-  const pushProfileIntoWaiting = async (profile: any): Promise<boolean> => {
+  const pushProfileIntoWaiting = async (
+    profile: any,
+    status: string
+  ): Promise<boolean> => {
     try {
       const waiting = {
         profile: profile,
-        status: "NotStarted",
+        status: status,
       };
       await db.dbHandler.collection(WAITING_COLL).insertOne(waiting);
       return true;
@@ -173,11 +177,14 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
     return false;
   };
 
-  const fetchNextWaitingProfile = async (): Promise<WaitingProfileType> => {
+  const fetchNextWaitingProfile = async (
+    preStatus: string,
+    postStatus: string
+  ): Promise<WaitingProfileType> => {
     const res = await db.dbHandler
       .collection(WAITING_COLL)
       .findOne(
-        { status: "NotStarted" },
+        { status: preStatus },
         { projection: { status: 1, profile: 1, _id: 0, id: "$_id" } }
       );
     if (res === null) {
@@ -186,14 +193,51 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
     }
     await db.dbHandler
       .collection(WAITING_COLL)
-      .updateOne({ _id: res.id }, { $set: { status: "Processing" } });
+      .updateOne({ _id: res.id }, { $set: { status: postStatus } });
     return res;
   };
 
-  const updateWaitingProfileStatus = async (id: string): Promise<boolean> => {
+  const updateWaitingProfileStatus = async (
+    id: string,
+    status: string
+  ): Promise<boolean> => {
     await db.dbHandler
       .collection(WAITING_COLL)
-      .updateOne({ _id: ObjectID(id) }, { $set: { status: "Finished" } });
+      .updateOne({ _id: ObjectID(id) }, { $set: { status: status } });
+    return true;
+  };
+
+  const fetchNextWaitingNFT = async (
+    preStatus: string,
+    postStatus: string
+  ): Promise<any> => {
+    const res = await db.dbHandler
+      .collection(NFT_COLL)
+      .findOne({ status: preStatus });
+    if (res === null) {
+      logger.info(`⛓ [db]: No waiting nft`);
+      return res;
+    }
+    res.id = res._id;
+    delete res._id;
+    await db.dbHandler
+      .collection(NFT_COLL)
+      .updateOne({ _id: res.id }, { $set: { status: postStatus } });
+    return res;
+  };
+
+  const updateWaitingNFTStatus = async (
+    id: string,
+    status: string,
+    txhash: string,
+    tokenId: string
+  ): Promise<boolean> => {
+    await db.dbHandler
+      .collection(NFT_COLL)
+      .updateOne(
+        { _id: ObjectID(id) },
+        { $set: { status: status, txhash: txhash, tokenId: tokenId } }
+      );
     return true;
   };
 
@@ -213,5 +257,7 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
     pushProfileIntoWaiting,
     fetchNextWaitingProfile,
     updateWaitingProfileStatus,
+    fetchNextWaitingNFT,
+    updateWaitingNFTStatus,
   };
 }

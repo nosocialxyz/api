@@ -75,3 +75,4 @@ export const CURSOR_COLL = "cursor";
 export const WHITELIST_COLL = "whitelist";
 export const AI_COLL = "ai";
 export const WAITING_COLL = "waiting";
+export const NFT_COLL = "nfts";

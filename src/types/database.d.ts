@@ -11,9 +11,19 @@ export interface DbRequestor {
   getPostByProfile: (profile: string) => Promise<PostType[]>;
   updateAIResultByPost: (result: any) => Promise<boolean>;
   getAIResultByProfile: (profile: string) => Promise<AIResultType[]>;
-  pushProfileIntoWaiting: (profile: string) => Promise<boolean>;
-  fetchNextWaitingProfile: () => Promise<WaitingProfileType>;
-  updateWaitingProfileStatus: (id: string) => Promise<boolean>;
+  pushProfileIntoWaiting: (profile: string, status: string) => Promise<boolean>;
+  fetchNextWaitingProfile: (
+    preStatus: string,
+    postStatus: string
+  ) => Promise<WaitingProfileType>;
+  updateWaitingProfileStatus: (id: string, status: string) => Promise<boolean>;
+  fetchNextWaitingNFT: (preStatus: string, postStatus: string) => Promise<any>;
+  updateWaitingNFTStatus: (
+    id: string,
+    status: string,
+    txhash: string,
+    tokenId: string
+  ) => Promise<boolean>;
 }
 
 export interface BaseResponse {

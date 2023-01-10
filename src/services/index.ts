@@ -1,4 +1,4 @@
-import { DBNAME } from "../config";
+import { DBNAME, NFT_COLL } from "../config";
 import { createDbRequestor } from "./db";
 import { createLensApiRequestor } from "./lens-api";
 import { withDbReady } from "./utils";
@@ -46,7 +46,7 @@ export const ai = {
       const dbRequestor = createDbRequestor(db);
       const profile = String(req.query["profile"]);
       logger.info(`⛓ [ai]: Push ${profile} into waiting list`);
-      await dbRequestor.pushProfileIntoWaiting(profile);
+      await dbRequestor.pushProfileIntoWaiting(profile, "NotStarted");
       res.json({
         statusCode: 200,
         message: "success",
@@ -56,7 +56,10 @@ export const ai = {
   fetchProfile: async (req: Request, res: Response, next: NextFunction) => {
     withDbReady(async (db: MongoDB) => {
       const dbRequestor = createDbRequestor(db);
-      const next_waiting = await dbRequestor.fetchNextWaitingProfile();
+      const next_waiting = await dbRequestor.fetchNextWaitingProfile(
+        "NotStarted",
+        "Processing"
+      );
       logger.info(`⛓ [ai]: Next waiting profile is ${next_waiting}`);
       res.json(next_waiting);
     }, next);
@@ -66,7 +69,7 @@ export const ai = {
       const dbRequestor = createDbRequestor(db);
       const waiting_id = String(req.query["id"]);
       logger.info(`⛓ [ai]: Update ${waiting_id} as finshed`);
-      await dbRequestor.updateWaitingProfileStatus(waiting_id);
+      await dbRequestor.updateWaitingProfileStatus(waiting_id, "Finished");
       res.json({
         statusCode: 200,
         message: "success",
@@ -107,6 +110,90 @@ export const ai = {
         };
         await dbRequestor.updateAIResultByPost(result);
       }
+      res.json({
+        statusCode: 200,
+        message: "success",
+      });
+    }, next);
+  },
+  pushAITag: async (req: Request, res: Response, next: NextFunction) => {
+    withDbReady(async (db: MongoDB) => {
+      const dbRequestor = createDbRequestor(db);
+      const profile = String(req.query["profile"]);
+      logger.info(
+        `⛓ [ai]: Push ${profile} into waiting list to generate AI tag`
+      );
+      await dbRequestor.pushProfileIntoWaiting(profile, "AITagNotStarted");
+      res.json({
+        statusCode: 200,
+        message: "success",
+      });
+    }, next);
+  },
+  fetchNextAITag: async (req: Request, res: Response, next: NextFunction) => {
+    withDbReady(async (db: MongoDB) => {
+      const dbRequestor = createDbRequestor(db);
+      const next_waiting = await dbRequestor.fetchNextWaitingProfile(
+        "AITagNotStarted",
+        "AITagGenerated"
+      );
+      logger.info(`⛓ [ai]: Next waiting profile is ${next_waiting}`);
+      res.json(next_waiting);
+    }, next);
+  },
+};
+
+export const nft = {
+  pushNft: async (req: Request, res: Response, next: NextFunction) => {
+    withDbReady(async (db: MongoDB) => {
+      const dbRequestor = createDbRequestor(db);
+      const data = {
+        profile: String(req.body["profile"]),
+        name: String(req.body["name"]),
+        description: String(req.body["description"]),
+        category: String(req.body["category"]),
+        provider: String(req.body["provider"]),
+        type: String(req.body["type"]),
+        pic_url: String(req.body["pic_url"]),
+        nftid: String(req.body["nftid"]),
+        status: "NotMinted",
+        txhash: null,
+        tokenId: null,
+      };
+      logger.info(
+        `⛓ [ai]: Update NFT ${data.nftid} for profile ${data.profile}`
+      );
+      await dbRequestor.insertOne(NFT_COLL, data);
+      res.json({
+        statusCode: 200,
+        message: "success",
+      });
+    }, next);
+  },
+  fetchNft: async (req: Request, res: Response, next: NextFunction) => {
+    withDbReady(async (db: MongoDB) => {
+      const dbRequestor = createDbRequestor(db);
+      const next_waiting = await dbRequestor.fetchNextWaitingNFT(
+        "NotMinted",
+        "Minting"
+      );
+      logger.info(`⛓ [ai]: Next waiting nft is ${next_waiting}`);
+      res.json(next_waiting);
+    }, next);
+  },
+  updateNft: async (req: Request, res: Response, next: NextFunction) => {
+    withDbReady(async (db: MongoDB) => {
+      const dbRequestor = createDbRequestor(db);
+      const waiting_id = String(req.query["id"]);
+      const txhash = String(req.query["txhash"]);
+      const tokenId = String(req.query["tokenId"]);
+      logger.info(`⛓ [ai]: Update ${waiting_id} as finshed`);
+      await dbRequestor.updateWaitingNFTStatus(
+        waiting_id,
+        "Minted",
+        txhash,
+        tokenId
+      );
       res.json({
         statusCode: 200,
         message: "success",
