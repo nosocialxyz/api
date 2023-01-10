@@ -225,15 +225,14 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
       },
       {},
     ]);
+    logger.info(`⛓ [db]: query success`);
     if (res === null) {
       logger.info(`⛓ [db]: No waiting nft`);
       return res;
     }
-    res.id = res._id;
-    delete res._id;
     await db.dbHandler
       .collection(NFT_COLL)
-      .updateOne({ _id: res.id }, { $set: { status: postStatus } });
+      .updateOne({ _id: res._id }, { $set: { status: postStatus } });
     return res;
   };
 
