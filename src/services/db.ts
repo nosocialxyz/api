@@ -220,11 +220,6 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
           as: "profile_info",
         },
       },
-      {
-        $match: {
-          status: preStatus,
-        },
-      },
     ]);
     logger.info(`⛓ [db]: query success`);
     if (res === null) {
