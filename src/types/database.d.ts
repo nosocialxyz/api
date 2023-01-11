@@ -56,3 +56,9 @@ export interface WaitingProfileType {
   profile: string;
   status: string;
 }
+
+export interface NFTStatus {
+  status: string;
+  txhash?: string;
+  tokenId?: string;
+}

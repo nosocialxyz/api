@@ -148,7 +148,7 @@ export const nft = {
     withDbReady(async (db: MongoDB) => {
       const dbRequestor = createDbRequestor(db);
       const data = {
-        profile: String(req.body["profile"]),
+        profileId: String(req.body["profile"]),
         name: String(req.body["name"]),
         description: String(req.body["description"]),
         category: String(req.body["category"]),
@@ -159,9 +159,10 @@ export const nft = {
         status: "NotMinted",
         txhash: null,
         tokenId: null,
+        _id: String(req.body["profile"]) + String(req.body["nftid"]),
       };
       logger.info(
-        `⛓ [ai]: Update NFT ${data.nftid} for profile ${data.profile}`
+        `⛓ [ai]: Update NFT ${data.nftid} for profile ${data.profileId}`
       );
       await dbRequestor.insertOne(NFT_COLL, data);
       res.json({
