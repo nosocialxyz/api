@@ -6,6 +6,7 @@ import {
   PostType,
   AIResultType,
   WaitingProfileType,
+  NFTStatus,
 } from "../types/database.d";
 import {
   PROFILE_COLL,
@@ -211,33 +212,50 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
     preStatus: string,
     postStatus: string
   ): Promise<any> => {
-    const res = await db.dbHandler
-      .collection(NFT_COLL)
-      .findOne({ status: preStatus });
+    const resCursor = await db.dbHandler.collection(NFT_COLL).aggregate([
+      {
+        $lookup: {
+          from: "profile",
+          localField: "profileId",
+          foreignField: "_id",
+          as: "profile_info",
+        },
+      },
+      {
+        $match: { status: preStatus },
+      },
+      {
+        $limit: 1,
+      },
+    ]);
+
+    const res = await resCursor.tryNext();
     if (res === null) {
       logger.info(`⛓ [db]: No waiting nft`);
       return res;
     }
+
     res.id = res._id;
+    res.ownedBy = res.profile_info[0].ownedBy;
     delete res._id;
-    await db.dbHandler
-      .collection(NFT_COLL)
-      .updateOne({ _id: res.id }, { $set: { status: postStatus } });
+    delete res.profile_info;
+
+    logger.info(`⛓ [db]: query success ${JSON.stringify(res)}`);
+    if (postStatus != preStatus) {
+      await db.dbHandler
+        .collection(NFT_COLL)
+        .updateOne({ _id: res.id }, { $set: { status: postStatus } });
+    }
     return res;
   };
 
   const updateWaitingNFTStatus = async (
     id: string,
-    status: string,
-    txhash: string,
-    tokenId: string
+    nftStatus: NFTStatus
   ): Promise<boolean> => {
     await db.dbHandler
       .collection(NFT_COLL)
-      .updateOne(
-        { _id: ObjectID(id) },
-        { $set: { status: status, txhash: txhash, tokenId: tokenId } }
-      );
+      .updateOne({ _id: id }, { $set: nftStatus });
     return true;
   };
 

@@ -9,6 +9,7 @@ import {
   WhitelistResponse,
   BaseResponse,
   ProfileType,
+  NFTStatus,
 } from "../types/database.d";
 
 export const base = {
@@ -148,20 +149,21 @@ export const nft = {
     withDbReady(async (db: MongoDB) => {
       const dbRequestor = createDbRequestor(db);
       const data = {
-        profile: String(req.body["profile"]),
+        profileId: String(req.body["profileId"]),
         name: String(req.body["name"]),
         description: String(req.body["description"]),
         category: String(req.body["category"]),
         provider: String(req.body["provider"]),
         type: String(req.body["type"]),
         pic_url: String(req.body["pic_url"]),
-        nftid: String(req.body["nftid"]),
+        nftId: String(req.body["nftId"]),
         status: "NotMinted",
         txhash: null,
         tokenId: null,
+        _id: String(req.body["profileId"]) + "-" + String(req.body["nftId"]),
       };
       logger.info(
-        `⛓ [ai]: Update NFT ${data.nftid} for profile ${data.profile}`
+        `⛓ [ai]: Update NFT ${data.nftId} for profile ${data.profileId}`
       );
       await dbRequestor.insertOne(NFT_COLL, data);
       res.json({
@@ -170,7 +172,7 @@ export const nft = {
       });
     }, next);
   },
-  fetchNft: async (req: Request, res: Response, next: NextFunction) => {
+  fetchNft2Mint: async (req: Request, res: Response, next: NextFunction) => {
     withDbReady(async (db: MongoDB) => {
       const dbRequestor = createDbRequestor(db);
       const next_waiting = await dbRequestor.fetchNextWaitingNFT(
@@ -181,19 +183,35 @@ export const nft = {
       res.json(next_waiting);
     }, next);
   },
+  fetchNft2Update: async (req: Request, res: Response, next: NextFunction) => {
+    withDbReady(async (db: MongoDB) => {
+      const dbRequestor = createDbRequestor(db);
+      const next_waiting = await dbRequestor.fetchNextWaitingNFT(
+        "Minting",
+        "Minting"
+      );
+      logger.info(
+        `⛓ [ai]: Next waiting nft to update token id is ${next_waiting}`
+      );
+      res.json(next_waiting);
+    }, next);
+  },
   updateNft: async (req: Request, res: Response, next: NextFunction) => {
     withDbReady(async (db: MongoDB) => {
       const dbRequestor = createDbRequestor(db);
-      const waiting_id = String(req.query["id"]);
-      const txhash = String(req.query["txhash"]);
-      const tokenId = String(req.query["tokenId"]);
+      const waiting_id = String(req.body["id"]);
+      const status = req.body["tokenId"] ? "Minted" : "Minting";
+      var nftStatus: NFTStatus = {
+        status: status,
+      };
+      if (req.body["txhash"]) {
+        nftStatus.txhash = String(req.body["txhash"]);
+      }
+      if (req.body["tokenId"]) {
+        nftStatus.tokenId = String(req.body["tokenId"]);
+      }
       logger.info(`⛓ [ai]: Update ${waiting_id} as finshed`);
-      await dbRequestor.updateWaitingNFTStatus(
-        waiting_id,
-        "Minted",
-        txhash,
-        tokenId
-      );
+      await dbRequestor.updateWaitingNFTStatus(waiting_id, nftStatus);
       res.json({
         statusCode: 200,
         message: "success",
