@@ -211,16 +211,19 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
     preStatus: string,
     postStatus: string
   ): Promise<any> => {
-    const res = await db.dbHandler.collection(NFT_COLL).aggregate([
-      {
-        $lookup: {
-          from: "profile",
-          localField: "profile.str",
-          foreignField: "_id.str",
-          as: "profile_info",
+    const res = await db.dbHandler
+      .collection(NFT_COLL)
+      .aggregate([
+        {
+          $lookup: {
+            from: "profile",
+            localField: "profile",
+            foreignField: "_id",
+            as: "profile_info",
+          },
         },
-      },
-    ]);
+      ])
+      .exec();
     logger.info(`⛓ [db]: query success`);
     if (res === null) {
       logger.info(`⛓ [db]: No waiting nft`);
