@@ -216,7 +216,7 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
       {
         $lookup: {
           from: "profile",
-          localField: "profile",
+          localField: "profileId",
           foreignField: "_id",
           as: "profile_info",
         },
