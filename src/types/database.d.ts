@@ -20,9 +20,7 @@ export interface DbRequestor {
   fetchNextWaitingNFT: (preStatus: string, postStatus: string) => Promise<any>;
   updateWaitingNFTStatus: (
     id: string,
-    status: string,
-    txhash: string,
-    tokenId: string
+    nftStatus: NFTStatus
   ) => Promise<boolean>;
 }
 

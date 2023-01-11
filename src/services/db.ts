@@ -252,22 +252,11 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
 
   const updateWaitingNFTStatus = async (
     id: string,
-    status: string,
-    txhash: string,
-    tokenId: string
+    nftStatus: NFTStatus
   ): Promise<boolean> => {
-    var data: NFTStatus = {
-      status: status,
-    };
-    if (txhash != "") {
-      data.txhash = txhash;
-    }
-    if (tokenId != "") {
-      data.tokenId = tokenId;
-    }
     await db.dbHandler
       .collection(NFT_COLL)
-      .updateOne({ _id: ObjectID(id) }, { $set: data });
+      .updateOne({ _id: ObjectID(id) }, { $set: nftStatus });
     return true;
   };
 

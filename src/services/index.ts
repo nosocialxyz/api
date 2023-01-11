@@ -9,6 +9,7 @@ import {
   WhitelistResponse,
   BaseResponse,
   ProfileType,
+  NFTStatus,
 } from "../types/database.d";
 
 export const base = {
@@ -199,16 +200,18 @@ export const nft = {
     withDbReady(async (db: MongoDB) => {
       const dbRequestor = createDbRequestor(db);
       const waiting_id = String(req.body["id"]);
-      const txhash = String(req.body["txhash"]);
-      const tokenId = String(req.body["tokenId"]);
-      const status = tokenId === "" ? "Minting" : "Minted";
+      const status = req.body["tokenId"] ? "Minting" : "Minted";
+      var nftStatus: NFTStatus = {
+        status: status,
+      };
+      if (req.body["txhash"]) {
+        nftStatus.txhash = String(req.body["txhash"]);
+      }
+      if (req.body["tokenId"]) {
+        nftStatus.tokenId = String(req.body["tokenId"]);
+      }
       logger.info(`⛓ [ai]: Update ${waiting_id} as finshed`);
-      await dbRequestor.updateWaitingNFTStatus(
-        waiting_id,
-        status,
-        txhash,
-        tokenId
-      );
+      await dbRequestor.updateWaitingNFTStatus(waiting_id, nftStatus);
       res.json({
         statusCode: 200,
         message: "success",
