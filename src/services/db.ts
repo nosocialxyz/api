@@ -17,7 +17,6 @@ import {
   WAITING_COLL,
   NFT_COLL,
 } from "../config";
-import { DefaultDeserializer } from "v8";
 var ObjectID = require("mongodb").ObjectID;
 
 export function createDbRequestor(db: MongoDB): DbRequestor {
