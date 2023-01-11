@@ -149,7 +149,7 @@ export const nft = {
     withDbReady(async (db: MongoDB) => {
       const dbRequestor = createDbRequestor(db);
       const data = {
-        profileId: String(req.body["profile"]),
+        profileId: String(req.body["profileId"]),
         name: String(req.body["name"]),
         description: String(req.body["description"]),
         category: String(req.body["category"]),
@@ -160,7 +160,7 @@ export const nft = {
         status: "NotMinted",
         txhash: null,
         tokenId: null,
-        _id: String(req.body["profile"]) + String(req.body["nftid"]),
+        _id: String(req.body["profileId"]) + String(req.body["nftid"]),
       };
       logger.info(
         `⛓ [ai]: Update NFT ${data.nftid} for profile ${data.profileId}`
@@ -200,7 +200,7 @@ export const nft = {
     withDbReady(async (db: MongoDB) => {
       const dbRequestor = createDbRequestor(db);
       const waiting_id = String(req.body["id"]);
-      const status = req.body["tokenId"] ? "Minting" : "Minted";
+      const status = req.body["tokenId"] ? "Minted" : "Minting";
       var nftStatus: NFTStatus = {
         status: status,
       };
