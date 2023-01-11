@@ -220,17 +220,13 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
           as: "profile_info",
         },
       },
-      {
-        $project: {
-          _id: 1,
-        },
-      },
     ]);
     logger.info(`⛓ [db]: query success`);
     if (res === null) {
       logger.info(`⛓ [db]: No waiting nft`);
       return res;
     }
+    logger.info(`⛓ [db]: query success ${JSON.stringify(res)}`);
     await db.dbHandler
       .collection(NFT_COLL)
       .updateOne({ _id: res._id }, { $set: { status: postStatus } });
