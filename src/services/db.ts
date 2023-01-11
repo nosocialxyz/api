@@ -240,9 +240,11 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
     delete res.profile_info;
 
     logger.info(`⛓ [db]: query success ${JSON.stringify(res)}`);
-    await db.dbHandler
-      .collection(NFT_COLL)
-      .updateOne({ _id: res.id }, { $set: { status: postStatus } });
+    if (postStatus != preStatus) {
+      await db.dbHandler
+        .collection(NFT_COLL)
+        .updateOne({ _id: res.id }, { $set: { status: postStatus } });
+    }
     return res;
   };
 

@@ -170,7 +170,7 @@ export const nft = {
       });
     }, next);
   },
-  fetchNft: async (req: Request, res: Response, next: NextFunction) => {
+  fetchNft2Mint: async (req: Request, res: Response, next: NextFunction) => {
     withDbReady(async (db: MongoDB) => {
       const dbRequestor = createDbRequestor(db);
       const next_waiting = await dbRequestor.fetchNextWaitingNFT(
@@ -181,16 +181,30 @@ export const nft = {
       res.json(next_waiting);
     }, next);
   },
+  fetchNft2Update: async (req: Request, res: Response, next: NextFunction) => {
+    withDbReady(async (db: MongoDB) => {
+      const dbRequestor = createDbRequestor(db);
+      const next_waiting = await dbRequestor.fetchNextWaitingNFT(
+        "Minting",
+        "Minting"
+      );
+      logger.info(
+        `⛓ [ai]: Next waiting nft to update token id is ${next_waiting}`
+      );
+      res.json(next_waiting);
+    }, next);
+  },
   updateNft: async (req: Request, res: Response, next: NextFunction) => {
     withDbReady(async (db: MongoDB) => {
       const dbRequestor = createDbRequestor(db);
       const waiting_id = String(req.query["id"]);
       const txhash = String(req.query["txhash"]);
       const tokenId = String(req.query["tokenId"]);
+      const status = tokenId === "" ? "Minting" : "Minted";
       logger.info(`⛓ [ai]: Update ${waiting_id} as finshed`);
       await dbRequestor.updateWaitingNFTStatus(
         waiting_id,
-        "Minted",
+        status,
         txhash,
         tokenId
       );
