@@ -197,9 +197,9 @@ export const nft = {
   updateNft: async (req: Request, res: Response, next: NextFunction) => {
     withDbReady(async (db: MongoDB) => {
       const dbRequestor = createDbRequestor(db);
-      const waiting_id = String(req.query["id"]);
-      const txhash = String(req.query["txhash"]);
-      const tokenId = String(req.query["tokenId"]);
+      const waiting_id = String(req.body["id"]);
+      const txhash = String(req.body["txhash"]);
+      const tokenId = String(req.body["tokenId"]);
       const status = tokenId === "" ? "Minting" : "Minted";
       logger.info(`⛓ [ai]: Update ${waiting_id} as finshed`);
       await dbRequestor.updateWaitingNFTStatus(
