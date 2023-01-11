@@ -156,14 +156,14 @@ export const nft = {
         provider: String(req.body["provider"]),
         type: String(req.body["type"]),
         pic_url: String(req.body["pic_url"]),
-        nftid: String(req.body["nftid"]),
+        nftId: String(req.body["nftId"]),
         status: "NotMinted",
         txhash: null,
         tokenId: null,
-        _id: String(req.body["profileId"]) + "-" + String(req.body["nftid"]),
+        _id: String(req.body["profileId"]) + "-" + String(req.body["nftId"]),
       };
       logger.info(
-        `⛓ [ai]: Update NFT ${data.nftid} for profile ${data.profileId}`
+        `⛓ [ai]: Update NFT ${data.nftId} for profile ${data.profileId}`
       );
       await dbRequestor.insertOne(NFT_COLL, data);
       res.json({
