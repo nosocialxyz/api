@@ -221,22 +221,23 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
         },
       },
       {
+        $match: { status: preStatus },
+      },
+      {
         $limit: 1,
       },
     ]);
-    for await (const doc of resCursor) {
-      console.log(doc);
+
+    const res = await resCursor.tryNext();
+    if (res === null) {
+      logger.info(`⛓ [db]: No waiting nft`);
+      return res;
     }
-    // logger.info(`⛓ [db]: query success`);
-    // if (res === null) {
-    //   logger.info(`⛓ [db]: No waiting nft`);
-    //   return res;
-    // }
-    // logger.info(`⛓ [db]: query success ${JSON.stringify(res.toArray())}`);
-    // await db.dbHandler
-    //   .collection(NFT_COLL)
-    //   .updateOne({ _id: res._id }, { $set: { status: postStatus } });
-    return resCursor;
+    logger.info(`⛓ [db]: query success ${JSON.stringify(res)}`);
+    await db.dbHandler
+      .collection(NFT_COLL)
+      .updateOne({ _id: res._id }, { $set: { status: postStatus } });
+    return res;
   };
 
   const updateWaitingNFTStatus = async (
