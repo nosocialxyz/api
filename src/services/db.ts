@@ -242,7 +242,7 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
     logger.info(`⛓ [db]: query success ${JSON.stringify(res)}`);
     await db.dbHandler
       .collection(NFT_COLL)
-      .updateOne({ _id: res._id }, { $set: { status: postStatus } });
+      .updateOne({ _id: res.id }, { $set: { status: postStatus } });
     return res;
   };
 
