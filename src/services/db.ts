@@ -256,7 +256,7 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
   ): Promise<boolean> => {
     await db.dbHandler
       .collection(NFT_COLL)
-      .updateOne({ _id: ObjectID(id) }, { $set: nftStatus });
+      .updateOne({ _id: id }, { $set: nftStatus });
     return true;
   };
 
