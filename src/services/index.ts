@@ -160,7 +160,7 @@ export const nft = {
         status: "NotMinted",
         txhash: null,
         tokenId: null,
-        _id: String(req.body["profileId"]) + String(req.body["nftid"]),
+        _id: String(req.body["profileId"]) + "-" + String(req.body["nftid"]),
       };
       logger.info(
         `⛓ [ai]: Update NFT ${data.nftid} for profile ${data.profileId}`
