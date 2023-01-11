@@ -233,6 +233,12 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
       logger.info(`⛓ [db]: No waiting nft`);
       return res;
     }
+
+    res.id = res._id;
+    res.ownedBy = res.profile_info.ownedBy;
+    delete res._id;
+    delete res.profile_info;
+
     logger.info(`⛓ [db]: query success ${JSON.stringify(res)}`);
     await db.dbHandler
       .collection(NFT_COLL)
