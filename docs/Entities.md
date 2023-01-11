@@ -1,7 +1,5 @@
-# Nosocial Entites (beta)
+# Nosocial Entites (alpha)
 
-## AI (TODO)
-... ...
 ## Achievement
 
 100 Lens Followers:
@@ -41,6 +39,20 @@ Send posts for three consecutive days:
     "category": "time",
     "provider": "Lenster",
     "description": "Use the Lenster APP to send post works for three consecutive days to get this reward",
+    "picture": "https://xxx",
+    "totalAmount": -1, // -1 means no upper limit
+}
+```
+
+## AI
+``` json
+{
+    "id": "0x4", // NTF's id 1,2,3,4...
+    "contractAddress": "0x463dh..33",
+    "name": "AI Content",
+    "category": "AI",
+    "provider": "NoSocial",
+    "description": "Keywords from social content analysis",
     "picture": "https://xxx",
     "totalAmount": -1, // -1 means no upper limit
 }

@@ -1,4 +1,4 @@
-# Nosocial Base API (beta)
+# Nosocial Base API (alpha)
 
 ## API template
 
@@ -77,34 +77,26 @@ Return:
         }
     },
 
-    "aiTags": [
-        {
-            "id": "0x123",
-            "category": "default",
-            "value": "Lens",
-            "url": ".../...",
-            "description": "..., ..., ..."
-        },
-        {
-            "id": "0x456",
-            "category": "hobby",
-            "value": "Music",
-            "url": ".../...",
-            "description": "..., ..., ..."
-        }
-        ....
-    ],
+    "aiTags": {
+        "id": "0x4", // AI class id
+        "name": "AI Content",
+        "category": "AI",
+        "provider": "NoSocial",
+        "description": "Keywords from social content analysis",
+        "picture": "https://xxx",
+        "tokenId": "0x10",
+        "url": ".../...",
+    },
 
     "achievements": [
         {
-            "id": "0x1",
+            "id": "0x1", // achievement class id
             "category": "popularity", // Classification
             "provider": "NoSocial",
             "name": "100 Followers",
             "description": "..., ..., ...",
             "picture": "https://xxx",
-            
-            "achievementId": "0x10",
+            "tokenId": "0x10",
             "url": ".../...",
             "status": "ready" // There are three states: notStart, ready, achieved; Here, only two types are returned: ready, achieved
         },
@@ -136,6 +128,26 @@ Return:
     ]
 }
 ```
+
+## Collect achievement
+
+Url: Post api/v0/achievement/collect
+
+Request:
+```json
+{
+    "id" : "profile id",
+    "acId": "achievement class id"
+}
+```
+
+Return:
+```json
+{
+    "status": "ongoing"
+}
+```
+
 
 ## Get Apps base information
 
@@ -170,6 +182,7 @@ Return:
                     "provider": "Lenster", // Must be provided by the app
                     "name": "100 Followers",
                     "description": "..., ..., ...",
+                    "tokenId": "0x10",
                     "picture": "https://xxx",
                     "url": ".../...",
                     "status": "ready", // notStart, ready, achieved
