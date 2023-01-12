@@ -122,7 +122,7 @@ Return:
             "picture": "https://xxx",
             "providerPicture": "https://xxx",
             "url": ".../...",
-            "status": "achieved", // There are four states: notStart, inProgress, ready, achieved; there are only two types here: ready, achieved
+            "status": "achieved", // There are three states: notStart, inProgress, achieved; there are only two types here: ready, achieved
         },
         ......
     ]
@@ -205,8 +205,8 @@ Request:
 
 Return:
 ```json
-{ // ready, inProgress, notStart
-    "ready": [...,...]
+{ // achieved, inProgress, notStart
+    "achieved": [...,...]
     "inProgress": [ 
         {
             "id": "0x123",
