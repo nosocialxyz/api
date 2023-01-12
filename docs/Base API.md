@@ -98,7 +98,7 @@ Return:
             "picture": "https://xxx",
             "tokenId": "0x10",
             "url": ".../...",
-            "status": "ready" // There are three states: notStart, ready, achieved; Here, only two types are returned: ready, achieved
+            "status": "ready" // There are three states: inProgress, ready, achieved; Here, only two types are returned: ready, achieved
         },
         ......
     ],
@@ -137,7 +137,7 @@ Request:
 ```json
 {
     "id" : "profile id",
-    "acId": "achievement class id"
+    "achvId": "achievement class id"
 }
 ```
 
@@ -185,7 +185,7 @@ Return:
                     "tokenId": "0x10",
                     "picture": "https://xxx",
                     "url": ".../...",
-                    "status": "ready", // notStart, ready, achieved
+                    "status": "ready", // inProgress, ready, achieved
                 },
                 ...
             ] 
