@@ -68,11 +68,17 @@ export const MONGO_SERVER = getParam("MONGO_SERVER");
 
 export const LENS_DATA_LIMIT = 50;
 
-export const DBNAME = getParam("DBNAME");
-export const PROFILE_COLL = "profile";
-export const PUBLICATION_COLL = "publication";
-export const CURSOR_COLL = "cursor";
-export const WHITELIST_COLL = "whitelist";
-export const AI_COLL = "ai";
+export const DB_NAME = getParamOrExit('DB_NAME');
+export const PROFILE_COLL = 'profile';
+export const PUBLICATION_COLL = 'publication';
+export const CURSOR_COLL = 'cursor';
+export const WHITELIST_COLL = 'whitelist';
+export const ACHIEVEMENT_COLL = 'achievement';
+export const AI_COLL = 'ai';
+export const TASK_COLL = 'task';
+export const APP_COLL = 'app';
+export const ACHV_TMPL_COLL = 'achv_tmpl'
+export const BENEFIT_TMPL_COLL = 'benefit_tmpl'
+export const TASK_TMPL_COLL = 'task_tmpl'
 export const WAITING_COLL = "waiting";
 export const NFT_COLL = "nfts";

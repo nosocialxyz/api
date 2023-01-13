@@ -1,16 +1,11 @@
-import { DBNAME, NFT_COLL } from "../config";
+import { NFT_COLL } from "../config";
 import { createDbRequestor } from "./db";
 import { createLensApiRequestor } from "./lens-api";
 import { withDbReady } from "./utils";
 import { MongoDB } from "../db";
 import { NextFunction, Request, Response } from "express";
 import { logger } from "../utils/logger";
-import {
-  WhitelistResponse,
-  BaseResponse,
-  ProfileType,
-  NFTStatus,
-} from "../types/database.d";
+import { NFTStatus } from "../types/database.d";
 
 export const base = {
   ping: (req: Request, res: Response, next: NextFunction) => {
@@ -39,6 +34,52 @@ export const base = {
     res.json(profiles);
     next();
   },
+  profileBase: async (req: Request, res: Response, next: NextFunction) => {
+    withDbReady(async (db: MongoDB) => {
+      const dbRequestor = createDbRequestor(db);
+      const profileId = String(req.query['id']);
+      const profileBase = await dbRequestor.getProfileBaseById(profileId);
+      res.json(profileBase);
+    },next);
+  },
+  appBase: async (req: Request, res: Response, next: NextFunction) => {
+    withDbReady(async (db: MongoDB) => {
+      const dbRequestor = createDbRequestor(db);
+      const profileId = String(req.query['id']);
+      const profileBase = await dbRequestor.getAppBaseById(profileId);
+      res.json(profileBase);
+    },next);
+  },
+  BenefitBase: async (req: Request, res: Response, next: NextFunction) => {
+    withDbReady(async (db: MongoDB) => {
+      const dbRequestor = createDbRequestor(db);
+      const profileId = String(req.query['id']);
+      const profileBase = await dbRequestor.getBenefitBaseById(profileId);
+      res.json(profileBase);
+    },next);
+  },
+  achievementCollect: async (req: Request, res: Response, next: NextFunction) => {
+    withDbReady(async (db: MongoDB) => {
+      const profileId = String(req.query['id']);
+      const achvId = String(req.query['achvId']);
+      nft.pushNft(req, res, next);
+      res.json({
+        statusCode: 200,
+        message: "success",
+      });
+    },next);
+  },
+  achieveAchievement: async (req: Request, res: Response, next: NextFunction) => {
+    withDbReady(async (db: MongoDB) => {
+      const achvInstId = String(req.query['id']);
+      const dbRequestor = createDbRequestor(db);
+      await dbRequestor.achieveAchievement(achvInstId);
+      res.json({
+        statusCode: 200,
+        message: "success",
+      });
+    },next);
+  }
 };
 
 export const ai = {

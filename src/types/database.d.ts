@@ -7,6 +7,9 @@ export interface DbRequestor {
   findOne: (collName: string, query: any) => Promise<any>;
   findMany: (collName: string, query: any) => Promise<any>;
   inWhitelist: (address: string) => Promise<boolean>;
+  getAppBaseById: (id: string) => Promise<any>;
+  getBenefitBaseById: (id: string) => Promise<any>;
+  getProfileBaseById: (id: string) => Promise<any>;
   getProfilesByAddress: (address: string) => Promise<ProfileType[]>;
   getPostByProfile: (profile: string) => Promise<PostType[]>;
   updateAIResultByPost: (result: any) => Promise<boolean>;
@@ -22,6 +25,8 @@ export interface DbRequestor {
     id: string,
     nftStatus: NFTStatus
   ) => Promise<boolean>;
+  getEaliestCreatedPubDate: (id: string) => Promise<string>;
+  achieveAchievement: (id: string) => Promise<void>;
 }
 
 export interface BaseResponse {
