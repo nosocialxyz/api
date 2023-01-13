@@ -346,29 +346,62 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
     }
     const info = await parseProfileInfo(profile);
 
-    // Get achievements
-    const achvs = await db.dbHandler.collection(ACHIEVEMENT_COLL).aggregate([
+    // Get achieved achievements
+    /*
+    const achvedAchvs = await db.dbHandler.collection(NFT_COLL).aggregate([
       {
         $match: {
-          profileId:id
+          profileId: id
         }
       },
       {
         $project: {
-          id: "$achvId",
+          id: "$_id",
+          category: "$category",
+          provider: "$provider",
+          name: "$name",
+          description: "$description",
+          picture: "$pic_url",
+          tokenId: "$tokenId",
+          status: "$status"
+        }
+      }
+    ]).toArray();
+    */
+
+    // Get ready achievements
+    const achvs = await db.dbHandler.collection(ACHIEVEMENT_COLL).aggregate([
+      {
+        $lookup: {
+          from: NFT_COLL,
+          localField: "_id",
+          foreignField: "_id",
+          as: "nft_info",
+        },
+      },
+      {
+        $match: {
+          profileId: id
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          id: "$_id",
           category: "$category",
           provider: "$provider",
           name: "$name",
           description: "$description",
           picture: "$picture",
-          tokenId: "$tokenId",
-          url: "$url",
+          tokenId: { $first: "$nft_info.tokenId" },
           status: "$status"
         }
       }
     ]).toArray();
     for (let i = 0; i < achvs.length; i++) {
-      Object.assign(achvs[i], { url: 'https://opensea.io/assets/matic/0x9b82daf85e9dcc4409ed13970035a181fb411542/' + parseInt(achvs[i].tokenId,16) });
+      if (achvs[i].tokenId) {
+        Object.assign(achvs[i], { url: 'https://opensea.io/assets/matic/0x9b82daf85e9dcc4409ed13970035a181fb411542/' + parseInt(achvs[i].tokenId,16) });
+      }
     }
 
     // Get AI tags
@@ -550,6 +583,7 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
       },
       {
         $project: {
+          _id: 0,
           id: "$_id",
           name: "$name",
           description: "$description",
