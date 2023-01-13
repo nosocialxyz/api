@@ -77,16 +77,19 @@ Return:
         }
     },
 
-    "aiTags": {
-        "id": "0x4", // AI class id
-        "name": "AI Content",
-        "category": "AI",
-        "provider": "NoSocial",
-        "description": "Keywords from social content analysis",
-        "picture": "https://xxx",
-        "tokenId": "0x10",
-        "url": ".../...",
-    },
+    "aiTags": [
+        {
+            "id": "0x4", // AI class id
+            "name": "AI Content",
+            "category": "AI",
+            "provider": "NoSocial",
+            "description": "Keywords from social content analysis",
+            "picture": "https://xxx",
+            "tokenId": "0x10",
+            "url": ".../...",
+        },
+        ....
+    ],
 
     "achievements": [
         {
