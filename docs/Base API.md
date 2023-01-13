@@ -106,7 +106,7 @@ Return:
         ......
     ],
 
-    "activites": {
+    "activities": {
         "posts": {"total": 10, "lastWeek": 3},
         "comments": {"total": 10, "lastWeek": 3},
         "mirrors": {"total": 10, "lastWeek": 3},
@@ -171,7 +171,7 @@ Return:
             "url": ".../...",
 
             // The following is unique information about the profile
-            "activites": {      
+            "activities": {      
                 "posts": 2,
                 "comments": 0,
                 "mirrors": 0,
