@@ -28,6 +28,7 @@ export interface DbRequestor {
   ) => Promise<boolean>;
   getEaliestCreatedPubDate: (id: string) => Promise<string>;
   achieveAchievement: (id: string) => Promise<void>;
+  hasAchievementById: (id: string) => Promise<boolean>;
 }
 
 export interface BaseResponse {

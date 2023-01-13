@@ -63,19 +63,28 @@ export const base = {
       const dbRequestor = createDbRequestor(db);
       const profileId = String(req.query['id']);
       const achvId = String(req.query['achvId']);
-      const data = await dbRequestor.genNftDataByAchvId(achvId);
-      if (JSON.stringify(data) === '{}') {
+      const achvInstId = profileId+'-'+achvId;
+      const hasAchievement = await dbRequestor.hasAchievementById(achvInstId);
+      if (hasAchievement) {
+        const data = await dbRequestor.genNftDataByAchvId(achvId);
+        if (JSON.stringify(data) === '{}') {
+          res.json({
+            statusCode: 404,
+            message: `Cannot find achievement:${achvId}`,
+          });
+        } else {
+          Object.assign(data, { profileId: profileId });
+          req.body = data;
+          nft.pushNft(req, res, next);
+          res.json({
+            statusCode: 200,
+            message: "success",
+          });
+        }
+      } else {
         res.json({
           statusCode: 404,
-          message: `Cannot find achievement:${achvId}`,
-        });
-      } else {
-        Object.assign(data, { profileId: profileId });
-        req.body = data;
-        nft.pushNft(req, res, next);
-        res.json({
-          statusCode: 200,
-          message: "success",
+          message: `Cannot find achievement:${achvInstId}`,
         });
       }
     },next);

@@ -764,6 +764,11 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
     return {};
   }
 
+  const hasAchievementById = async (id: string): Promise<boolean> => {
+    const res = await db.dbHandler.collection(ACHIEVEMENT_COLL).findOne({_id:id});
+    return res !== null;
+  }
+
   return {
     insertOne,
     insertMany,
@@ -788,5 +793,6 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
     updateWaitingNFTStatus,
     getEaliestCreatedPubDate,
     achieveAchievement,
+    hasAchievementById,
   }
 }
