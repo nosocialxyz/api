@@ -369,10 +369,11 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
     ]).toArray();
 
     // Get AI tags
+    const queryId = id + "-0xffffffff";
     const aiTags = await db.dbHandler.collection(NFT_COLL).aggregate([
       {
         $match: {
-          profileId: id
+          _id: queryId 
         }
       },
       {
@@ -383,7 +384,7 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
           category: "$category",
           provider: "$provider",
           description: "$description",
-          picture: "$picture",
+          picture: "$pic_url",
           tokenId: "$tokenId"
         }
       },
@@ -393,6 +394,7 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
       //  }
       //}
     ]).toArray();
+    console.log(`dddd ${JSON.stringify(aiTags)}`)
     for (let i = 0; i < aiTags.length; i++) {
       Object.assign(aiTags[i], { url: 'https://opensea.io/assets/matic/0x9b82daf85e9dcc4409ed13970035a181fb411542/' + parseInt(aiTags[i].tokenId,16) });
     }
@@ -657,7 +659,7 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
         {
           $project: {
             _id: 0,
-            id: "$_id",
+            id: "$taskId",
             name: "$name",
             bio: "$bio",
             description: "$description",
@@ -670,6 +672,7 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
           }
         }
       ]).toArray();
+      console.log(`finished ${JSON.stringify(finishedTasks)}`)
       if (finishedTasks.length === b.tasks.length) {
         // Achieved benefits
         let objTmp: any = {
@@ -684,7 +687,7 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
         // In-progress benefits
         const taskMap = new Map();
         for (const task of finishedTasks) {
-          taskMap.set(task.taskId, task);
+          taskMap.set(task.id, task);
         }
         const undoTaskIds: string[] = [];
         for (const id of b.tasks) {
@@ -715,7 +718,7 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
           }
         ]).toArray();
         let objTmp: any = {
-          tasks: undoTasks
+          tasks: [...finishedTasks, ...undoTasks]
         };
         Object.assign(b, objTmp);
         inProgressBs.push(b);
