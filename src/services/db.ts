@@ -311,7 +311,7 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
       return res;
     })(profile);
     const getPictureUrl = (pic: any) => {
-      if (!(pic.original && pic.original.url)) {
+      if (!(pic && pic.original && pic.original.url)) {
         return null;
       }
       const url = pic.original.url;
