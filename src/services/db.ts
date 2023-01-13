@@ -369,7 +369,7 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
     ]).toArray();
 
     // Get AI tags
-    const AITags = await db.dbHandler.collection(AI_COLL).aggregate([
+    const aiTags = await db.dbHandler.collection(NFT_COLL).aggregate([
       {
         $match: {
           profileId: id
@@ -377,6 +377,7 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
       },
       {
         $project: {
+          _id: 0,
           id: "$_id",
           name: "$name",
           category: "$category",
@@ -384,16 +385,18 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
           description: "$description",
           picture: "$picture",
           tokenId: "$tokenId",
-          url: "$url"
+          tag: { $toDouble: "$tokenId" }
         }
-      }
+      },
+      //{
+      //  $addFields: {
+      //    url: 'https://opensea.io/assets/matic/0x9b82daf85e9dcc4409ed13970035a181fb411542/' + "$tag"
+      //  }
+      //}
     ]).toArray();
-    const aiTags = ((tags: any) => {
-      if (tags.length > 0) {
-        return tags[0];
-      }
-      return {};
-    })(AITags);
+    for (let i = 0; i < aiTags.length; i++) {
+      Object.assign(aiTags[i], { url: 'https://opensea.io/assets/matic/0x9b82daf85e9dcc4409ed13970035a181fb411542/' + parseInt(aiTags[i].tokenId,16) });
+    }
 
     // Get activities
     const last7Days = Dayjs().subtract(Dayjs().day() + 7, 'day').format('YYYY-MM-DD');

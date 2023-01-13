@@ -73,6 +73,10 @@ export const base = {
         Object.assign(data, { profileId: profileId });
         req.body = data;
         nft.pushNft(req, res, next);
+        res.json({
+          statusCode: 200,
+          message: "success",
+        });
       }
     },next);
   },
