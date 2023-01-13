@@ -18,6 +18,7 @@ import {
   NFT_COLL,
   TASK_COLL,
   BENEFIT_TMPL_COLL,
+  ACHV_TMPL_COLL,
   AI_COLL,
   APP_COLL,
   ACHIEVEMENT_COLL,
@@ -650,10 +651,29 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
             profileId: id,
             taskId: { $in: b.tasks },
           }
+        },
+        {
+          $project: {
+            _id: 0,
+            id: "$_id",
+            name: "$name",
+            bio: "$bio",
+            description: "$description",
+            url: "$url"
+          }
+        },
+        {
+          $addFields: {
+            isFinished: true
+          }
         }
       ]).toArray();
       if (finishedTasks.length === b.tasks.length) {
         // Achieved benefits
+        let objTmp: any = {
+          tasks: finishedTasks
+        };
+        Object.assign(b, objTmp);
         achvedBs.push(b)
       } else if (finishedTasks.length === 0) {
         // No-start benefits
@@ -716,6 +736,31 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
     }
   }
 
+  const genNftDataByAchvId = async(id: string): Promise<any> => {
+    const data = await db.dbHandler.collection(ACHV_TMPL_COLL).aggregate([
+      {
+        $match: {
+          _id: id,
+        }
+      },
+      {
+        $project: {
+          name: "$name",
+          description: "$description",
+          category: "$category",
+          provider: "$provider",
+          type: "SBT",
+          pic_url: "$picture",
+          nftId: "$_id"
+        }
+      }
+    ]).tryNext();
+    if (data) {
+      return data;
+    }
+    return {};
+  }
+
   return {
     insertOne,
     insertMany,
@@ -730,6 +775,7 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
     getProfileBaseById,
     getProfilesByAddress,
     getPostByProfile,
+    genNftDataByAchvId,
     updateAIResultByPost,
     getAIResultByProfile,
     pushProfileIntoWaiting,

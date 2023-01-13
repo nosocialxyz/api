@@ -60,13 +60,20 @@ export const base = {
   },
   achievementCollect: async (req: Request, res: Response, next: NextFunction) => {
     withDbReady(async (db: MongoDB) => {
+      const dbRequestor = createDbRequestor(db);
       const profileId = String(req.query['id']);
       const achvId = String(req.query['achvId']);
-      nft.pushNft(req, res, next);
-      res.json({
-        statusCode: 200,
-        message: "success",
-      });
+      const data = await dbRequestor.genNftDataByAchvId(achvId);
+      if (JSON.stringify(data) === '{}') {
+        res.json({
+          statusCode: 404,
+          message: `Cannot find achievement:${achvId}`,
+        });
+      } else {
+        Object.assign(data, { profileId: profileId });
+        req.body = data;
+        nft.pushNft(req, res, next);
+      }
     },next);
   },
   achieveAchievement: async (req: Request, res: Response, next: NextFunction) => {
