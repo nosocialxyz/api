@@ -560,13 +560,45 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
     }
 
     // Get achievement
-    const achvs = await db.dbHandler.collection(ACHIEVEMENT_COLL).find(
+    const achvTmpls = await db.dbHandler.collection(ACHV_TMPL_COLL).aggregate([
       {
-        profileId: id,
-        provider: { $in: appIds }
+        $project: {
+          _id: 0,
+          id: "$_id",
+          category: "$category", 
+          provider: "$provider",
+          name: "$name",
+          description: "$description",
+          tokenId: "$tokenId",
+          picture: "$picture",
+          url: "$url",
+        }
+      },
+      {
+        $addFields: {
+          status: 'inProgress'
+        }
+      }
+    ]).toArray();
+    const achvTmplMap = new Map();
+    for (const achvTmpl of achvTmpls) {
+      let arrayTmp: any[] = [];
+      if (!achvTmplMap.has(achvTmpl.provider)) {
+        achvTmplMap.set(achvTmpl.provider, arrayTmp);
+      }
+      arrayTmp = achvTmplMap.get(achvTmpl.provider);
+      arrayTmp.push(achvTmpl);
+    }
+    const achvs = await db.dbHandler.collection(ACHIEVEMENT_COLL).aggregate([
+      {
+        $match: {
+          profileId: id,
+          provider: { $in: appIds }
+        }
       },
       {
         $project: {
+          _id: 0,
           id: "$achvId",
           category: "$category", 
           provider: "$provider",
@@ -578,14 +610,30 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
           status: "$status",
         }
       }
-    ).toArray();
+    ]).toArray();
     const achvMap= new Map();
+    if (achvs.length === 0) {
+      achvs.push(...achvTmpls);
+    }
     for (const achv of achvs) {
       if (!achvMap.has(achv.provider)) {
         achvMap.set(achv.provider, []);
       }
       const achvArray = achvMap.get(achv.provider);
       achvArray.push(achv);
+    }
+    for (let [provider, achvsArray] of achvMap) {
+      if (achvTmplMap.has(provider) && achvTmplMap.get(provider).length > achvsArray.length) {
+        const achvIdSet = new Set();
+        for (const item of achvsArray) {
+          achvIdSet.add(item.id);
+        }
+        for (const item of achvTmplMap.get(provider)) {
+          if (!achvIdSet.has(item.id)) {
+            achvsArray.push(item);
+          }
+        }
+      }
     }
 
     // Generate result
