@@ -651,7 +651,7 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
           picture: curApp.picture,
           url: curApp.url,
           // activities
-          activites: {      
+          activities: {      
               posts: curStats.Post,
               comments: curStats.Comment,
               mirrors: curStats.Mirror,
