@@ -367,6 +367,9 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
         }
       }
     ]).toArray();
+    for (let i = 0; i < achvs.length; i++) {
+      Object.assign(achvs[i], { url: 'https://opensea.io/assets/matic/0x9b82daf85e9dcc4409ed13970035a181fb411542/' + parseInt(achvs[i].tokenId,16) });
+    }
 
     // Get AI tags
     const queryId = id + "-0xffffffff";
@@ -394,7 +397,6 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
       //  }
       //}
     ]).toArray();
-    console.log(`dddd ${JSON.stringify(aiTags)}`)
     for (let i = 0; i < aiTags.length; i++) {
       Object.assign(aiTags[i], { url: 'https://opensea.io/assets/matic/0x9b82daf85e9dcc4409ed13970035a181fb411542/' + parseInt(aiTags[i].tokenId,16) });
     }
