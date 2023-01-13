@@ -107,10 +107,10 @@ Return:
     ],
 
     "activites": {
-        "posts": {"total": 10, "lastweek": 3},
-        "comments": {"total": 10, "lastweek": 3},
-        "mirrors": {"total": 10, "lastweek": 3},
-        "collects": {"total": 10, "lastweek": 3}
+        "posts": {"total": 10, "lastWeek": 3},
+        "comments": {"total": 10, "lastWeek": 3},
+        "mirrors": {"total": 10, "lastWeek": 3},
+        "collects": {"total": 10, "lastWeek": 3}
     },
 
     "benefits": [
