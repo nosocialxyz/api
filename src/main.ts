@@ -1,9 +1,10 @@
 import express, { NextFunction, Request, Response } from "express";
 import { logger } from "./utils/logger";
-import { PORT, DBNAME } from "./config";
+import { PORT } from "./config";
 import timeout from "connect-timeout";
 import * as services from "./services";
 import * as bodyParser from "body-parser";
+import cors from 'cors';
 
 const app = express();
 const maxErrorHandlingCount = 10;
@@ -19,7 +20,8 @@ const errorHandler = (
   logger.error(`☄️ : Error catched: ${errMsg}.`);
   if (res) {
     res.status(400).send({
-      status: "error",
+      status: 'error',
+      statusCode: 400,
       message: errMsg,
     });
   }
@@ -48,10 +50,22 @@ app.use(loggingResponse);
 // API timeout handler
 app.use(timeout("600s"));
 
-// Get routes
+// Cross domain
+app.use(cors());
+
+// Get base routes
 app.get("/api/v0/ping", services.base.ping);
 app.get("/api/v0/account/whitelist", services.base.whitelist);
 app.get("/api/v0/account/profiles", services.base.profiles);
+app.get('/api/v0/profile/base', services.base.profileBase);
+app.get('/api/v0/apps/base', services.base.appBase);
+app.get('/api/v0/benefits/base', services.base.BenefitBase);
+
+// Post routes
+app.post('/api/v0/achievement/collect', services.base.achievementCollect);
+
+app.post("/api/v0/achievement/achieve", services.base.achieveAchievement);
+
 app.get("/api/v0/publication/post", services.ai.fetchAllPosts);
 
 app.get("/api/v0/ai/fetchResults", services.ai.fetchAIResults);
