@@ -384,8 +384,7 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
           provider: "$provider",
           description: "$description",
           picture: "$picture",
-          tokenId: "$tokenId",
-          tag: { $toDouble: "$tokenId" }
+          tokenId: "$tokenId"
         }
       },
       //{
