@@ -387,7 +387,7 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
       {
         $project: {
           _id: 0,
-          id: "$_id",
+          id: "$achvId",
           category: "$category",
           provider: "$provider",
           name: "$name",
