@@ -34,6 +34,7 @@ export enum AchievementStatus {
 }
 
 var ObjectID = require("mongodb").ObjectID;
+const nftPrefixUrl = 'https://opensea.io/assets/matic/0x9b82daf85e9dcc4409ed13970035a181fb411542/';
 
 export function createDbRequestor(db: MongoDB): DbRequestor {
   const insertOne = async (collName: string, data: any): Promise<void> => {
@@ -400,7 +401,7 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
     ]).toArray();
     for (let i = 0; i < achvs.length; i++) {
       if (achvs[i].tokenId) {
-        Object.assign(achvs[i], { url: 'https://opensea.io/assets/matic/0x9b82daf85e9dcc4409ed13970035a181fb411542/' + parseInt(achvs[i].tokenId,16) });
+        Object.assign(achvs[i], { url: nftPrefixUrl + parseInt(achvs[i].tokenId,16) });
       }
     }
 
@@ -424,14 +425,9 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
           tokenId: "$tokenId"
         }
       },
-      //{
-      //  $addFields: {
-      //    url: 'https://opensea.io/assets/matic/0x9b82daf85e9dcc4409ed13970035a181fb411542/' + "$tag"
-      //  }
-      //}
     ]).toArray();
     for (let i = 0; i < aiTags.length; i++) {
-      Object.assign(aiTags[i], { url: 'https://opensea.io/assets/matic/0x9b82daf85e9dcc4409ed13970035a181fb411542/' + parseInt(aiTags[i].tokenId,16) });
+      Object.assign(aiTags[i], { url: nftPrefixUrl + parseInt(aiTags[i].tokenId,16) });
     }
 
     // Get activities
