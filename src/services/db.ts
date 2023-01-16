@@ -372,17 +372,17 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
     // Get ready achievements
     const achvs = await db.dbHandler.collection(ACHIEVEMENT_COLL).aggregate([
       {
+        $match: {
+          profileId: id
+        }
+      },
+      {
         $lookup: {
           from: NFT_COLL,
           localField: "_id",
           foreignField: "_id",
           as: "nft_info",
         },
-      },
-      {
-        $match: {
-          profileId: id
-        }
       },
       {
         $project: {
