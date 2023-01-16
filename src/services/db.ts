@@ -18,6 +18,7 @@ import {
   NFT_COLL,
   TASK_COLL,
   BENEFIT_TMPL_COLL,
+  ACHV_TMPL_COLL,
   AI_COLL,
   APP_COLL,
   ACHIEVEMENT_COLL,
@@ -33,6 +34,7 @@ export enum AchievementStatus {
 }
 
 var ObjectID = require("mongodb").ObjectID;
+const nftPrefixUrl = 'https://opensea.io/assets/matic/0x9b82daf85e9dcc4409ed13970035a181fb411542/';
 
 export function createDbRequestor(db: MongoDB): DbRequestor {
   const insertOne = async (collName: string, data: any): Promise<void> => {
@@ -310,7 +312,7 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
       return res;
     })(profile);
     const getPictureUrl = (pic: any) => {
-      if (!(pic.original && pic.original.url)) {
+      if (!(pic && pic.original && pic.original.url)) {
         return null;
       }
       const url = pic.original.url;
@@ -345,30 +347,9 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
     }
     const info = await parseProfileInfo(profile);
 
-    // Get achievements
-    const achvs = await db.dbHandler.collection(ACHIEVEMENT_COLL).aggregate([
-      {
-        $match: {
-          profileId:id
-        }
-      },
-      {
-        $project: {
-          id: "$achvId",
-          category: "$category",
-          provider: "$provider",
-          name: "$name",
-          description: "$description",
-          picture: "$picture",
-          tokenId: "$tokenId",
-          url: "$url",
-          status: "$status"
-        }
-      }
-    ]).toArray();
-
-    // Get AI tags
-    const AITags = await db.dbHandler.collection(AI_COLL).aggregate([
+    // Get achieved achievements
+    /*
+    const achvedAchvs = await db.dbHandler.collection(NFT_COLL).aggregate([
       {
         $match: {
           profileId: id
@@ -377,22 +358,77 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
       {
         $project: {
           id: "$_id",
+          category: "$category",
+          provider: "$provider",
+          name: "$name",
+          description: "$description",
+          picture: "$pic_url",
+          tokenId: "$tokenId",
+          status: "$status"
+        }
+      }
+    ]).toArray();
+    */
+
+    // Get ready achievements
+    const achvs = await db.dbHandler.collection(ACHIEVEMENT_COLL).aggregate([
+      {
+        $match: {
+          profileId: id
+        }
+      },
+      {
+        $lookup: {
+          from: NFT_COLL,
+          localField: "_id",
+          foreignField: "_id",
+          as: "nft_info",
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          id: "$achvId",
+          category: "$category",
+          provider: "$provider",
+          name: "$name",
+          description: "$description",
+          picture: "$picture",
+          tokenId: { $first: "$nft_info.tokenId" },
+          status: "$status"
+        }
+      }
+    ]).toArray();
+    for (let i = 0; i < achvs.length; i++) {
+      if (achvs[i].tokenId) {
+        Object.assign(achvs[i], { url: nftPrefixUrl + parseInt(achvs[i].tokenId,16) });
+      }
+    }
+
+    // Get AI tags
+    const queryId = id + "-0xffffffff";
+    const aiTags = await db.dbHandler.collection(NFT_COLL).aggregate([
+      {
+        $match: {
+          _id: queryId 
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          id: "$_id",
           name: "$name",
           category: "$category",
           provider: "$provider",
           description: "$description",
-          picture: "$picture",
-          tokenId: "$tokenId",
-          url: "$url"
+          picture: "$pic_url",
+          tokenId: "$tokenId"
         }
-      }
+      },
     ]).toArray();
-    const aiTags = ((tags: any) => {
-      if (tags.length > 0) {
-        return tags[0];
-      }
-      return {};
-    })(AITags);
+    for (let i = 0; i < aiTags.length; i++) {
+      Object.assign(aiTags[i], { url: nftPrefixUrl + parseInt(aiTags[i].tokenId,16) });
+    }
 
     // Get activities
     const last7Days = Dayjs().subtract(Dayjs().day() + 7, 'day').format('YYYY-MM-DD');
@@ -543,6 +579,7 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
       },
       {
         $project: {
+          _id: 0,
           id: "$_id",
           name: "$name",
           description: "$description",
@@ -557,13 +594,45 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
     }
 
     // Get achievement
-    const achvs = await db.dbHandler.collection(ACHIEVEMENT_COLL).find(
+    const achvTmpls = await db.dbHandler.collection(ACHV_TMPL_COLL).aggregate([
       {
-        profileId: id,
-        provider: { $in: appIds }
+        $project: {
+          _id: 0,
+          id: "$_id",
+          category: "$category", 
+          provider: "$provider",
+          name: "$name",
+          description: "$description",
+          tokenId: "$tokenId",
+          picture: "$picture",
+          url: "$url",
+        }
+      },
+      {
+        $addFields: {
+          status: 'inProgress'
+        }
+      }
+    ]).toArray();
+    const achvTmplMap = new Map();
+    for (const achvTmpl of achvTmpls) {
+      let arrayTmp: any[] = [];
+      if (!achvTmplMap.has(achvTmpl.provider)) {
+        achvTmplMap.set(achvTmpl.provider, arrayTmp);
+      }
+      arrayTmp = achvTmplMap.get(achvTmpl.provider);
+      arrayTmp.push(achvTmpl);
+    }
+    const achvs = await db.dbHandler.collection(ACHIEVEMENT_COLL).aggregate([
+      {
+        $match: {
+          profileId: id,
+          provider: { $in: appIds }
+        }
       },
       {
         $project: {
+          _id: 0,
           id: "$achvId",
           category: "$category", 
           provider: "$provider",
@@ -575,14 +644,30 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
           status: "$status",
         }
       }
-    ).toArray();
+    ]).toArray();
     const achvMap= new Map();
+    if (achvs.length === 0) {
+      achvs.push(...achvTmpls);
+    }
     for (const achv of achvs) {
       if (!achvMap.has(achv.provider)) {
         achvMap.set(achv.provider, []);
       }
       const achvArray = achvMap.get(achv.provider);
       achvArray.push(achv);
+    }
+    for (let [provider, achvsArray] of achvMap) {
+      if (achvTmplMap.has(provider) && achvTmplMap.get(provider).length > achvsArray.length) {
+        const achvIdSet = new Set();
+        for (const item of achvsArray) {
+          achvIdSet.add(item.id);
+        }
+        for (const item of achvTmplMap.get(provider)) {
+          if (!achvIdSet.has(item.id)) {
+            achvsArray.push(item);
+          }
+        }
+      }
     }
 
     // Generate result
@@ -600,7 +685,7 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
           picture: curApp.picture,
           url: curApp.url,
           // activities
-          activites: {      
+          activities: {      
               posts: curStats.Post,
               comments: curStats.Comment,
               mirrors: curStats.Mirror,
@@ -650,10 +735,30 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
             profileId: id,
             taskId: { $in: b.tasks },
           }
+        },
+        {
+          $project: {
+            _id: 0,
+            id: "$taskId",
+            name: "$name",
+            bio: "$bio",
+            description: "$description",
+            url: "$url"
+          }
+        },
+        {
+          $addFields: {
+            isFinished: true
+          }
         }
       ]).toArray();
+      console.log(`finished ${JSON.stringify(finishedTasks)}`)
       if (finishedTasks.length === b.tasks.length) {
         // Achieved benefits
+        let objTmp: any = {
+          tasks: finishedTasks
+        };
+        Object.assign(b, objTmp);
         achvedBs.push(b)
       } else if (finishedTasks.length === 0) {
         // No-start benefits
@@ -662,7 +767,7 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
         // In-progress benefits
         const taskMap = new Map();
         for (const task of finishedTasks) {
-          taskMap.set(task.taskId, task);
+          taskMap.set(task.id, task);
         }
         const undoTaskIds: string[] = [];
         for (const id of b.tasks) {
@@ -693,7 +798,7 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
           }
         ]).toArray();
         let objTmp: any = {
-          tasks: undoTasks
+          tasks: [...finishedTasks, ...undoTasks]
         };
         Object.assign(b, objTmp);
         inProgressBs.push(b);
@@ -716,6 +821,36 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
     }
   }
 
+  const genNftDataByAchvId = async(id: string): Promise<any> => {
+    const data = await db.dbHandler.collection(ACHV_TMPL_COLL).aggregate([
+      {
+        $match: {
+          _id: id,
+        }
+      },
+      {
+        $project: {
+          name: "$name",
+          description: "$description",
+          category: "$category",
+          provider: "$provider",
+          type: "SBT",
+          pic_url: "$picture",
+          nftId: "$_id"
+        }
+      }
+    ]).tryNext();
+    if (data) {
+      return data;
+    }
+    return {};
+  }
+
+  const hasAchievementById = async (id: string): Promise<boolean> => {
+    const res = await db.dbHandler.collection(ACHIEVEMENT_COLL).findOne({_id:id});
+    return res !== null;
+  }
+
   return {
     insertOne,
     insertMany,
@@ -730,6 +865,7 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
     getProfileBaseById,
     getProfilesByAddress,
     getPostByProfile,
+    genNftDataByAchvId,
     updateAIResultByPost,
     getAIResultByProfile,
     pushProfileIntoWaiting,
@@ -739,5 +875,6 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
     updateWaitingNFTStatus,
     getEaliestCreatedPubDate,
     achieveAchievement,
+    hasAchievementById,
   }
 }
