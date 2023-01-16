@@ -78,7 +78,7 @@ export const base = {
           nft.pushNft(req, res, next);
           res.json({
             statusCode: 200,
-            message: "success",
+            message: "Minting is in progress, please wait for the confirmation of the block",
           });
         }
       } else {
