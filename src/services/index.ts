@@ -147,8 +147,8 @@ export const ai = {
       const dbRequestor = createDbRequestor(db);
       const waiting_id = String(req.query["id"]);
       logger.info(`⛓ [ai]: Update ${waiting_id} as finshed`);
-      const status = req.body["status"] ? "Finished" : "Processing";
       const unprocessed = Number(req.body["unprocessed"]);
+      const status = unprocessed == 0 ? "Finished" : "Processing";
       await dbRequestor.updateWaitingProfileStatus(
         waiting_id,
         unprocessed,
