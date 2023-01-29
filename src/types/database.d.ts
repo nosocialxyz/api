@@ -15,12 +15,21 @@ export interface DbRequestor {
   genNftDataByAchvId: (id: string) => Promise<any>;
   updateAIResultByPost: (result: any) => Promise<boolean>;
   getAIResultByProfile: (profile: string) => Promise<AIResultType[]>;
-  pushProfileIntoWaiting: (profile: string, status: string) => Promise<boolean>;
+  pushProfileIntoWaiting: (
+    profile: string,
+    types: string,
+    preStatus: string,
+    status: string
+  ) => Promise<boolean>;
   fetchNextWaitingProfile: (
     preStatus: string,
     postStatus: string
   ) => Promise<WaitingProfileType>;
-  updateWaitingProfileStatus: (id: string, status: string) => Promise<boolean>;
+  updateWaitingProfileStatus: (
+    id: string,
+    unprocessed: number,
+    status: string
+  ) => Promise<boolean>;
   fetchNextWaitingNFT: (preStatus: string, postStatus: string) => Promise<any>;
   updateWaitingNFTStatus: (
     id: string,
