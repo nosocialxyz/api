@@ -228,7 +228,7 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
       };
       await db.dbHandler
         .collection(WAITING_COLL)
-        .updateOne(filter, waiting, { upsert: true });
+        .updateOne(filter, { $set: waiting }, { upsert: true });
       return true;
     } catch (e: any) {
       logger.warn("⛓ [db]: Something wrong with insert new waiting profile");
