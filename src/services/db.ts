@@ -34,7 +34,25 @@ export enum AchievementStatus {
 }
 
 var ObjectID = require("mongodb").ObjectID;
-const nftPrefixUrl = 'https://opensea.io/assets/matic/0x9b82daf85e9dcc4409ed13970035a181fb411542/';
+const nftPrefix = 'https://opensea.io/assets/matic/0x9b82daf85e9dcc4409ed13970035a181fb411542/';
+
+function baseToDecimal(input: string, base: number) {
+  // works up to 72057594037927928 / FFFFFFFFFFFFF8
+  var field = input;
+  return {
+    $sum: {
+      $map: {
+        input: { $range: [0, { $strLenBytes: field}] },
+        in: {
+          $multiply: [
+            { $pow: [base, { $subtract: [{ $strLenBytes: field}, { $add: ["$$this", 1] }] }] },
+            { $indexOfBytes: ["0123456789ABCDEF", { $toUpper: { $substrBytes: [field, "$$this", 1] } }] }
+          ]
+        }
+      }
+    }
+  };
+}
 
 export function createDbRequestor(db: MongoDB): DbRequestor {
   const insertOne = async (collName: string, data: any): Promise<void> => {
@@ -347,34 +365,41 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
     }
     const info = await parseProfileInfo(profile);
 
-    // Get achieved achievements
-    /*
-    const achvedAchvs = await db.dbHandler.collection(NFT_COLL).aggregate([
+    // Get ready achievements
+    const achvs = await db.dbHandler.collection(ACHIEVEMENT_COLL).aggregate([
       {
         $match: {
           profileId: id
         }
       },
       {
-        $project: {
-          id: "$_id",
-          category: "$category",
-          provider: "$provider",
-          name: "$name",
-          description: "$description",
-          picture: "$pic_url",
-          tokenId: "$tokenId",
-          status: "$status"
-        }
-      }
-    ]).toArray();
-    */
-
-    // Get ready achievements
-    const achvs = await db.dbHandler.collection(ACHIEVEMENT_COLL).aggregate([
+        $lookup: {
+          from: NFT_COLL,
+          localField: "_id",
+          foreignField: "_id",
+          as: "nft_info",
+        },
+      },
       {
-        $match: {
-          profileId: id
+        $set: {
+          tokenIdInt: {
+            $replaceOne: {
+              input: { $first: "$nft_info.tokenId" },
+              find: "x",
+              replacement: "0"
+            }
+          }
+        }
+      },
+      {
+        $set: {
+          tokenStr: {
+            $cond: [
+              { $ne: ["$tokenIdInt", null] },
+              { $toString: baseToDecimal("$tokenIdInt",16) },
+              null,
+            ]
+          }
         }
       },
       {
@@ -395,15 +420,21 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
           description: "$description",
           picture: "$picture",
           tokenId: { $first: "$nft_info.tokenId" },
+          url: {
+            $concat: [
+              nftPrefix, 
+              "$tokenStr"
+            ],
+          },
           status: "$status"
         }
       }
     ]).toArray();
-    for (let i = 0; i < achvs.length; i++) {
-      if (achvs[i].tokenId) {
-        Object.assign(achvs[i], { url: nftPrefixUrl + parseInt(achvs[i].tokenId,16) });
-      }
-    }
+    //for (let i = 0; i < achvs.length; i++) {
+    //  if (achvs[i].tokenId) {
+    //    Object.assign(achvs[i], { url: nftPrefixUrl + parseInt(achvs[i].tokenId,16) });
+    //  }
+    //}
 
     // Get AI tags
     const queryId = id + "-0xffffffff";
@@ -411,6 +442,28 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
       {
         $match: {
           _id: queryId 
+        }
+      },
+      {
+        $set: {
+          tokenIdInt: {
+            $replaceOne: {
+              input: "$tokenId",
+              find: "x",
+              replacement: "0",
+            }
+          }
+        }
+      },
+      {
+        $set: {
+          tokenStr: {
+            $cond: [
+              { $ne: ["$tokenIdInt", null] },
+              { $toString: baseToDecimal("$tokenIdInt",16) },
+              null,
+            ]
+          }
         }
       },
       {
@@ -422,13 +475,19 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
           provider: "$provider",
           description: "$description",
           picture: "$pic_url",
-          tokenId: "$tokenId"
+          tokenId: "$tokenId",
+          url: {
+            $concat: [
+              nftPrefix, 
+              "$tokenStr"
+            ],
+          },
         }
       },
     ]).toArray();
-    for (let i = 0; i < aiTags.length; i++) {
-      Object.assign(aiTags[i], { url: nftPrefixUrl + parseInt(aiTags[i].tokenId,16) });
-    }
+    //for (let i = 0; i < aiTags.length; i++) {
+    //  Object.assign(aiTags[i], { url: nftPrefixUrl + parseInt(aiTags[i].tokenId,16) });
+    //}
 
     // Get activities
     const last7Days = Dayjs().subtract(Dayjs().day() + 7, 'day').format('YYYY-MM-DD');
@@ -656,15 +715,15 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
       const achvArray = achvMap.get(achv.provider);
       achvArray.push(achv);
     }
-    for (let [provider, achvsArray] of achvMap) {
-      if (achvTmplMap.has(provider) && achvTmplMap.get(provider).length > achvsArray.length) {
+    for (let [provider, achvArray] of achvMap) {
+      if (achvTmplMap.has(provider) && achvTmplMap.get(provider).length > achvArray.length) {
         const achvIdSet = new Set();
-        for (const item of achvsArray) {
+        for (const item of achvArray) {
           achvIdSet.add(item.id);
         }
         for (const item of achvTmplMap.get(provider)) {
           if (!achvIdSet.has(item.id)) {
-            achvsArray.push(item);
+            achvArray.push(item);
           }
         }
       }

@@ -1,0 +1,12 @@
+version: '3.0'
+services:
+  nosocial-api:
+    image: 'nosocial/nosocial-api:0.0.1'
+    ports:
+      - "22222:22222"
+    logging:
+      driver: json-file
+      options:
+        max-size: 1000m
+    restart: always
+    container_name: nosocial-api
