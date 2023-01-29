@@ -245,6 +245,7 @@ export const nft = {
         type: String(req.body["type"]),
         pic_url: String(req.body["pic_url"]),
         nftId: String(req.body["nftId"]),
+        tags: req.body["tags"],
         status: "NotMinted",
         txhash: null,
         tokenId: null,
