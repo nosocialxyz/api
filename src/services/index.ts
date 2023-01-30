@@ -37,37 +37,41 @@ export const base = {
   profileBase: async (req: Request, res: Response, next: NextFunction) => {
     withDbReady(async (db: MongoDB) => {
       const dbRequestor = createDbRequestor(db);
-      const profileId = String(req.query['id']);
+      const profileId = String(req.query["id"]);
       const profileBase = await dbRequestor.getProfileBaseById(profileId);
       res.json(profileBase);
-    },next);
+    }, next);
   },
   appBase: async (req: Request, res: Response, next: NextFunction) => {
     withDbReady(async (db: MongoDB) => {
       const dbRequestor = createDbRequestor(db);
-      const profileId = String(req.query['id']);
+      const profileId = String(req.query["id"]);
       const profileBase = await dbRequestor.getAppBaseById(profileId);
       res.json(profileBase);
-    },next);
+    }, next);
   },
   BenefitBase: async (req: Request, res: Response, next: NextFunction) => {
     withDbReady(async (db: MongoDB) => {
       const dbRequestor = createDbRequestor(db);
-      const profileId = String(req.query['id']);
+      const profileId = String(req.query["id"]);
       const profileBase = await dbRequestor.getBenefitBaseById(profileId);
       res.json(profileBase);
-    },next);
+    }, next);
   },
-  achievementCollect: async (req: Request, res: Response, next: NextFunction) => {
+  achievementCollect: async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
     withDbReady(async (db: MongoDB) => {
       const dbRequestor = createDbRequestor(db);
-      const profileId = String(req.query['id']);
-      const achvId = String(req.query['achvId']);
-      const achvInstId = profileId+'-'+achvId;
+      const profileId = String(req.query["id"]);
+      const achvId = String(req.query["achvId"]);
+      const achvInstId = profileId + "-" + achvId;
       const hasAchievement = await dbRequestor.hasAchievementById(achvInstId);
       if (hasAchievement) {
         const data = await dbRequestor.genNftDataByAchvId(achvId);
-        if (JSON.stringify(data) === '{}') {
+        if (JSON.stringify(data) === "{}") {
           res.json({
             statusCode: 404,
             message: `Cannot find achievement:${achvId}`,
@@ -78,7 +82,8 @@ export const base = {
           nft.pushNft(req, res, next);
           res.json({
             statusCode: 200,
-            message: "Minting is in progress, please wait for the confirmation of the block",
+            message:
+              "Minting is in progress, please wait for the confirmation of the block",
           });
         }
       } else {
@@ -87,19 +92,23 @@ export const base = {
           message: `Cannot find achievement:${achvInstId}`,
         });
       }
-    },next);
+    }, next);
   },
-  achieveAchievement: async (req: Request, res: Response, next: NextFunction) => {
+  achieveAchievement: async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
     withDbReady(async (db: MongoDB) => {
-      const achvInstId = String(req.query['id']);
+      const achvInstId = String(req.query["id"]);
       const dbRequestor = createDbRequestor(db);
       await dbRequestor.achieveAchievement(achvInstId);
       res.json({
         statusCode: 200,
         message: "success",
       });
-    },next);
-  }
+    }, next);
+  },
 };
 
 export const ai = {
@@ -108,7 +117,14 @@ export const ai = {
       const dbRequestor = createDbRequestor(db);
       const profile = String(req.query["profile"]);
       logger.info(`⛓ [ai]: Push ${profile} into waiting list`);
-      await dbRequestor.pushProfileIntoWaiting(profile, "NotStarted");
+      // Waiting, Processing, Finished
+      // Profile types: 0xeeeeeeee
+      await dbRequestor.pushProfileIntoWaiting(
+        profile,
+        "0xeeeeeeee",
+        "Finished",
+        "Waiting"
+      );
       res.json({
         statusCode: 200,
         message: "success",
@@ -119,7 +135,7 @@ export const ai = {
     withDbReady(async (db: MongoDB) => {
       const dbRequestor = createDbRequestor(db);
       const next_waiting = await dbRequestor.fetchNextWaitingProfile(
-        "NotStarted",
+        "Waiting",
         "Processing"
       );
       logger.info(`⛓ [ai]: Next waiting profile is ${next_waiting}`);
@@ -131,7 +147,13 @@ export const ai = {
       const dbRequestor = createDbRequestor(db);
       const waiting_id = String(req.query["id"]);
       logger.info(`⛓ [ai]: Update ${waiting_id} as finshed`);
-      await dbRequestor.updateWaitingProfileStatus(waiting_id, "Finished");
+      const unprocessed = Number(req.body["unprocessed"]);
+      const status = unprocessed == 0 ? "Finished" : "Processing";
+      await dbRequestor.updateWaitingProfileStatus(
+        waiting_id,
+        unprocessed,
+        status
+      );
       res.json({
         statusCode: 200,
         message: "success",
@@ -185,7 +207,12 @@ export const ai = {
       logger.info(
         `⛓ [ai]: Push ${profile} into waiting list to generate AI tag`
       );
-      await dbRequestor.pushProfileIntoWaiting(profile, "AITagNotStarted");
+      await dbRequestor.pushProfileIntoWaiting(
+        profile,
+        "0xdddddddd",
+        "AITagGenerated",
+        "AITagNotStarted"
+      );
       res.json({
         statusCode: 200,
         message: "success",
@@ -218,6 +245,7 @@ export const nft = {
         type: String(req.body["type"]),
         pic_url: String(req.body["pic_url"]),
         nftId: String(req.body["nftId"]),
+        tags: req.body["tags"],
         status: "NotMinted",
         txhash: null,
         tokenId: null,
