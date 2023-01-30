@@ -101,7 +101,7 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
     // upsert is true which means create new document where the indicated one doesn't exist.
     const options = { upsert: true };
     await db.dbHandler
-      .collection(CURSOR_COLL)
+      .collection(collName)
       .updateOne(query, { $set: data }, options);
   };
 
