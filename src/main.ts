@@ -53,13 +53,17 @@ app.use(timeout("600s"));
 // Cross domain
 app.use(cors());
 
-// Get base routes
+// Base routes
 app.get("/api/v0/ping", services.base.ping);
 app.get("/api/v0/account/whitelist", services.base.whitelist);
 app.get("/api/v0/account/profiles", services.base.profiles);
 app.get('/api/v0/profile/base', services.base.profileBase);
 app.get('/api/v0/apps/base', services.base.appBase);
 app.get('/api/v0/benefits/base', services.base.BenefitBase);
+
+// Lens tags
+app.post('/api/v0/lenstag/trigger', services.lenstag.trigger);
+app.get('/api/v0/lenstag/tags', services.lenstag.tags);
 
 // Post routes
 app.post('/api/v0/achievement/collect', services.base.achievementCollect);

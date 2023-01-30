@@ -1,11 +1,12 @@
 import { NFT_COLL } from "../config";
 import { createDbRequestor } from "./db";
 import { createLensApiRequestor } from "./lens-api";
-import { withDbReady } from "./utils";
+import { withDbReady, withDbReadyOnly } from "./utils";
 import { MongoDB } from "../db";
 import { NextFunction, Request, Response } from "express";
 import { logger } from "../utils/logger";
 import { NFTStatus } from "../types/database.d";
+import { PROFILE_COLL } from "../config";
 
 export const base = {
   ping: (req: Request, res: Response, next: NextFunction) => {
@@ -63,12 +64,13 @@ export const base = {
     res: Response,
     next: NextFunction
   ) => {
-    withDbReady(async (db: MongoDB) => {
+    withDbReadyOnly(async (db: MongoDB) => {
       const dbRequestor = createDbRequestor(db);
       const profileId = String(req.query["id"]);
       const achvId = String(req.query["achvId"]);
       const achvInstId = profileId + "-" + achvId;
       const hasAchievement = await dbRequestor.hasAchievementById(achvInstId);
+      let hasNext = true;
       if (hasAchievement) {
         const data = await dbRequestor.genNftDataByAchvId(achvId);
         if (JSON.stringify(data) === "{}") {
@@ -79,12 +81,8 @@ export const base = {
         } else {
           Object.assign(data, { profileId: profileId });
           req.body = data;
+          hasNext = false;
           nft.pushNft(req, res, next);
-          res.json({
-            statusCode: 200,
-            message:
-              "Minting is in progress, please wait for the confirmation of the block",
-          });
         }
       } else {
         res.json({
@@ -92,7 +90,8 @@ export const base = {
           message: `Cannot find achievement:${achvInstId}`,
         });
       }
-    }, next);
+      if (hasNext) next();
+    });
   },
   achieveAchievement: async (
     req: Request,
@@ -102,7 +101,6 @@ export const base = {
     withDbReady(async (db: MongoDB) => {
       const achvInstId = String(req.query["id"]);
       const dbRequestor = createDbRequestor(db);
-      await dbRequestor.achieveAchievement(achvInstId);
       res.json({
         statusCode: 200,
         message: "success",
@@ -111,17 +109,59 @@ export const base = {
   },
 };
 
+export const lenstag = {
+  trigger: async (
+    req: Request, 
+    res: Response, 
+    next: NextFunction
+  ) => {
+    withDbReadyOnly(async (db: MongoDB) => {
+      let hasNext = true;
+      const dbRequestor = createDbRequestor(db);
+      const handle = String(req.query["handle"]);
+      const resQ = await dbRequestor.findOne(
+        PROFILE_COLL,
+        { handle: handle+'.lens' },
+      );
+      if (resQ === null) {
+        res.json({
+          statusCode: 405,
+          message: `handle:${handle} not found.`,
+        });
+      } else {
+        req.query.profile = resQ._id;
+        req.query.handle = handle;
+        hasNext = false;
+        ai.pushProfile(req, res, next);
+      }
+      if (hasNext) next();
+    });
+  },
+  tags: async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    withDbReady(async (db: MongoDB) => {
+      const dbRequestor = createDbRequestor(db);
+      const handle = String(req.query["handle"]);
+      const resT = await dbRequestor.getAITagsByHandle(handle+".lens")
+      res.json(resT);
+    }, next);
+  }
+}
+
 export const ai = {
   pushProfile: async (req: Request, res: Response, next: NextFunction) => {
     withDbReady(async (db: MongoDB) => {
       const dbRequestor = createDbRequestor(db);
-      const profile = String(req.query["profile"]);
-      logger.info(`⛓ [ai]: Push ${profile} into waiting list`);
+      const profileId = String(req.query["profile"]);
+      logger.info(`⛓ [ai]: Push ${profileId} into waiting list`);
       // Waiting, Processing, Finished
-      // Profile types: 0xeeeeeeee
+      // ProfileId types: 0xeeeeeeee
       await dbRequestor.pushProfileIntoWaiting(
-        profile,
-        "0xeeeeeeee",
+        profileId,
+        "0xffffffff",
         "Finished",
         "Waiting"
       );
@@ -203,12 +243,12 @@ export const ai = {
   pushAITag: async (req: Request, res: Response, next: NextFunction) => {
     withDbReady(async (db: MongoDB) => {
       const dbRequestor = createDbRequestor(db);
-      const profile = String(req.query["profile"]);
+      const profileId = String(req.query["profile"]);
       logger.info(
-        `⛓ [ai]: Push ${profile} into waiting list to generate AI tag`
+        `⛓ [ai]: Push ${profileId} into waiting list to generate AI tag`
       );
       await dbRequestor.pushProfileIntoWaiting(
-        profile,
+        profileId,
         "0xdddddddd",
         "AITagGenerated",
         "AITagNotStarted"
