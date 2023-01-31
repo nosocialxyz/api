@@ -146,7 +146,14 @@ export const lenstag = {
       const dbRequestor = createDbRequestor(db);
       const handle = String(req.query["handle"]);
       const resT = await dbRequestor.getAITagsByHandle(handle+".lens")
-      res.json(resT);
+      if (resT === null) {
+        res.json({
+          statusCode: 404,
+          message: `Cannot get tags by handle:${handle}`,
+        })
+      } else {
+        res.json(resT);
+      }
     }, next);
   }
 }
