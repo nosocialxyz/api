@@ -12,6 +12,7 @@ export interface DbRequestor {
   getProfileBaseById: (id: string) => Promise<any>;
   getProfilesByAddress: (address: string) => Promise<ProfileType[]>;
   getPostByProfile: (profile: string) => Promise<PostType[]>;
+  getAITagsByHandle: (handle: string) => Promise<any>;
   genNftDataByAchvId: (id: string) => Promise<any>;
   updateAIResultByPost: (result: any) => Promise<boolean>;
   getAIResultByProfile: (profile: string) => Promise<AIResultType[]>;

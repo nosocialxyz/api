@@ -197,6 +197,51 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
     return await res.toArray();
   };
 
+  const getAITagsByHandle = async (handle: string): Promise<any> => {
+    const profile = await db.dbHandler.collection(PROFILE_COLL).findOne({handle:handle});
+    if (profile === null)
+      return null;
+
+    const tags = await db.dbHandler.collection(WAITING_COLL).aggregate([
+      {
+        $match: { _id: profile._id+"-0xffffffff" },
+      },
+      {
+        $lookup: {
+          from: NFT_COLL,
+          localField: "_id",
+          foreignField: "_id",
+          as: "nft_info",
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          unprocessed: 1,
+          tags: { $first: "$nft_info.tags" },
+          aiPicture: { $first: "$nft_info.pic_url" },
+        }
+      },
+    ]).tryNext();
+    if (tags === null)
+      return null;
+
+    const picture = ((pic: any) => {
+      if (!(pic && pic.original && pic.original.url)) {
+        return null;
+      }
+      const url = pic.original.url;
+      const lensInfraUrl = "https://lens.infura-ipfs.io/ipfs/";
+      const ipfsTitle = "ipfs://";
+      if (url.startsWith(ipfsTitle)) {
+        return lensInfraUrl + url.substring(ipfsTitle.length, url.length);
+      }
+      return url;
+    })(profile.picture);
+    Object.assign(tags, { handle: profile.handle, picture: picture });
+    return tags;
+  };
+
   const updateAIResultByPost = async (result: any): Promise<boolean> => {
     try {
       await db.dbHandler.collection(AI_COLL).insertOne(result);
@@ -209,12 +254,12 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
   };
 
   const pushProfileIntoWaiting = async (
-    profile: any,
+    profileId: string,
     types: string,
     preStatus: string,
     postStatus: string
   ): Promise<boolean> => {
-    const id = profile + "-" + types;
+    const id = profileId + "-" + types;
     try {
       const filter = {
         _id: id,
@@ -222,7 +267,7 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
       };
       const waiting = {
         _id: id,
-        profile: profile,
+        profileId: profileId,
         unprocessed: 0,
         status: postStatus,
       };
@@ -245,7 +290,7 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
       .collection(WAITING_COLL)
       .findOne(
         { status: preStatus },
-        { projection: { status: 1, profile: 1, _id: 0, id: "$_id" } }
+        { projection: { status: 1, profileId: 1, _id: 0, id: "$_id" } }
       );
     if (res === null) {
       logger.info(`⛓ [db]: No waiting profile`);
@@ -437,14 +482,6 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
                 null,
               ],
             },
-          },
-        },
-        {
-          $lookup: {
-            from: NFT_COLL,
-            localField: "_id",
-            foreignField: "_id",
-            as: "nft_info",
           },
         },
         {
@@ -1007,6 +1044,7 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
     getProfileBaseById,
     getProfilesByAddress,
     getPostByProfile,
+    getAITagsByHandle,
     genNftDataByAchvId,
     updateAIResultByPost,
     getAIResultByProfile,
