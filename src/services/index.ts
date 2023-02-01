@@ -110,19 +110,14 @@ export const base = {
 };
 
 export const lenstag = {
-  trigger: async (
-    req: Request, 
-    res: Response, 
-    next: NextFunction
-  ) => {
+  trigger: async (req: Request, res: Response, next: NextFunction) => {
     withDbReadyOnly(async (db: MongoDB) => {
       let hasNext = true;
       const dbRequestor = createDbRequestor(db);
       const handle = String(req.query["handle"]);
-      const resQ = await dbRequestor.findOne(
-        PROFILE_COLL,
-        { handle: handle+'.lens' },
-      );
+      const resQ = await dbRequestor.findOne(PROFILE_COLL, {
+        handle: handle + ".lens",
+      });
       if (resQ === null) {
         res.json({
           statusCode: 405,
@@ -137,26 +132,22 @@ export const lenstag = {
       if (hasNext) next();
     });
   },
-  tags: async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) => {
+  tags: async (req: Request, res: Response, next: NextFunction) => {
     withDbReady(async (db: MongoDB) => {
       const dbRequestor = createDbRequestor(db);
       const handle = String(req.query["handle"]);
-      const resT = await dbRequestor.getAITagsByHandle(handle+".lens")
+      const resT = await dbRequestor.getAITagsByHandle(handle + ".lens");
       if (resT === null) {
         res.json({
           statusCode: 404,
           message: `Cannot get tags by handle:${handle}`,
-        })
+        });
       } else {
         res.json(resT);
       }
     }, next);
-  }
-}
+  },
+};
 
 export const ai = {
   pushProfile: async (req: Request, res: Response, next: NextFunction) => {
@@ -164,8 +155,8 @@ export const ai = {
       const dbRequestor = createDbRequestor(db);
       const profileId = String(req.query["profile"]);
       logger.info(`⛓ [ai]: Push ${profileId} into waiting list`);
-      // Waiting, Processing, Finished
-      // ProfileId types: 0xeeeeeeee
+      // Waiting, Processing, AITagNotStarted, Generating, Finished
+      // ProfileId types: 0xffffffff
       await dbRequestor.pushProfileIntoWaiting(
         profileId,
         "0xffffffff",
@@ -195,7 +186,15 @@ export const ai = {
       const waiting_id = String(req.query["id"]);
       logger.info(`⛓ [ai]: Update ${waiting_id} as finshed`);
       const unprocessed = Number(req.body["unprocessed"]);
-      const status = unprocessed == 0 ? "Finished" : "Processing";
+      // -1 as total finished
+      // 0 as ai analyze finished
+      // >0 doing
+      const status =
+        unprocessed == -1
+          ? "Finished"
+          : unprocessed == 0
+          ? "AITagNotStarted"
+          : "Processing";
       await dbRequestor.updateWaitingProfileStatus(
         waiting_id,
         unprocessed,
@@ -247,6 +246,7 @@ export const ai = {
       });
     }, next);
   },
+  // Useless right now
   pushAITag: async (req: Request, res: Response, next: NextFunction) => {
     withDbReady(async (db: MongoDB) => {
       const dbRequestor = createDbRequestor(db);
@@ -271,7 +271,7 @@ export const ai = {
       const dbRequestor = createDbRequestor(db);
       const next_waiting = await dbRequestor.fetchNextWaitingProfile(
         "AITagNotStarted",
-        "AITagGenerated"
+        "Generating"
       );
       logger.info(`⛓ [ai]: Next waiting profile is ${next_waiting}`);
       res.json(next_waiting);
