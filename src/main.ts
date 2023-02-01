@@ -4,23 +4,18 @@ import { PORT } from "./config";
 import timeout from "connect-timeout";
 import * as services from "./services";
 import * as bodyParser from "body-parser";
-import cors from 'cors';
+import cors from "cors";
 
 const app = express();
 const maxErrorHandlingCount = 10;
 let errorHandlingCount = 0;
 
-const errorHandler = (
-  err: any,
-  _req: Request | null,
-  res: Response | null,
-  _next: any
-) => {
+const errorHandler = (err: any, _req: Request | null, res: Response | null, _next: any) => {
   const errMsg: string = "" + err ? err.message : "Unknown error";
   logger.error(`☄️ : Error catched: ${errMsg}.`);
   if (res) {
     res.status(400).send({
-      status: 'error',
+      status: "error",
       statusCode: 400,
       message: errMsg,
     });
@@ -57,16 +52,16 @@ app.use(cors());
 app.get("/api/v0/ping", services.base.ping);
 app.get("/api/v0/account/whitelist", services.base.whitelist);
 app.get("/api/v0/account/profiles", services.base.profiles);
-app.get('/api/v0/profile/base', services.base.profileBase);
-app.get('/api/v0/apps/base', services.base.appBase);
-app.get('/api/v0/benefits/base', services.base.BenefitBase);
+app.get("/api/v0/profile/base", services.base.profileBase);
+app.get("/api/v0/apps/base", services.base.appBase);
+app.get("/api/v0/benefits/base", services.base.BenefitBase);
 
 // Lens tags
-app.post('/api/v0/lenstag/trigger', services.lenstag.trigger);
-app.get('/api/v0/lenstag/tags', services.lenstag.tags);
+app.post("/api/v0/lenstag/trigger", services.lenstag.trigger);
+app.get("/api/v0/lenstag/tags", services.lenstag.tags);
 
 // Post routes
-app.post('/api/v0/achievement/collect', services.base.achievementCollect);
+app.post("/api/v0/achievement/collect", services.base.achievementCollect);
 
 app.post("/api/v0/achievement/achieve", services.base.achieveAchievement);
 
@@ -94,9 +89,7 @@ process.on("uncaughtException", (err: Error) => {
   if (++errorHandlingCount <= maxErrorHandlingCount) {
     errorHandler(err, null, null, null);
   } else {
-    logger.error(
-      "Reach max error handling count, just exit and waitinng for restart"
-    );
+    logger.error("Reach max error handling count, just exit and waitinng for restart");
     // eslint-disable-next-line no-process-exit
     process.exit(1);
   }

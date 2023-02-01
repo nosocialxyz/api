@@ -1,25 +1,18 @@
-import ApolloLinkTimeout from 'apollo-link-timeout';
-import {
-  ApolloClient,
-  ApolloLink,
-  DefaultOptions,
-  from,
-  HttpLink,
-  InMemoryCache,
-} from '@apollo/client/core';
-import { onError } from '@apollo/client/link/error';
-import fetch from 'cross-fetch';
-import { LENS_API } from './config';
-import { getAuthenticationToken } from './state';
+import ApolloLinkTimeout from "apollo-link-timeout";
+import { ApolloClient, ApolloLink, DefaultOptions, from, HttpLink, InMemoryCache } from "@apollo/client/core";
+import { onError } from "@apollo/client/link/error";
+import fetch from "cross-fetch";
+import { LENS_API } from "./config";
+import { getAuthenticationToken } from "./state";
 
 const defaultOptions: DefaultOptions = {
   watchQuery: {
-    fetchPolicy: 'no-cache',
-    errorPolicy: 'ignore',
+    fetchPolicy: "no-cache",
+    errorPolicy: "ignore",
   },
   query: {
-    fetchPolicy: 'no-cache',
-    errorPolicy: 'all',
+    fetchPolicy: "no-cache",
+    errorPolicy: "all",
   },
 };
 
@@ -48,7 +41,7 @@ const authLink = new ApolloLink((operation, forward) => {
   // Use the setContext method to set the HTTP headers.
   operation.setContext({
     headers: {
-      'x-access-token': token ? `Bearer ${token}` : '',
+      "x-access-token": token ? `Bearer ${token}` : "",
     },
   });
 

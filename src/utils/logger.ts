@@ -47,10 +47,7 @@ export const logger = createChildLogger({
   modulePrefix: "☄",
 });
 
-export function createChildLoggerWith(
-  config: ChildLoggerConfig,
-  loggerParent: Logger
-): Logger {
+export function createChildLoggerWith(config: ChildLoggerConfig, loggerParent: Logger): Logger {
   return loggerParent.child(config);
 }
 

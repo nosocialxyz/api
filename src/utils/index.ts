@@ -1,6 +1,6 @@
 export const sleep = (time: number) => {
-  return new Promise(resolve => setTimeout(resolve, time));
-}
+  return new Promise((resolve) => setTimeout(resolve, time));
+};
 
 // eslint-disable-next-line
 export function formatError(e: any): string {

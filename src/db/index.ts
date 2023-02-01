@@ -1,23 +1,21 @@
 import { MongoClient } from "mongodb";
 import { MONGO_SERVER } from "../config";
 import { logger } from "../utils/logger";
-import { sleep } from '../utils';
+import { sleep } from "../utils";
 
-const dbPools = new Map<string,MongoDB>();
+const dbPools = new Map<string, MongoDB>();
 
-export async function loadDB(dbName: string): Promise<MongoDB|null> {
+export async function loadDB(dbName: string): Promise<MongoDB | null> {
   if (dbPools.has(dbName)) {
     const db = dbPools.get(dbName);
-    if (db != undefined)
-      return db;
+    if (db != undefined) return db;
 
     dbPools.delete(dbName);
   }
 
   const db = new MongoDB(dbName);
   const res = await db.connect();
-  if (!res)
-    throw `Load db:${dbName} failed`;
+  if (!res) throw `Load db:${dbName} failed`;
 
   dbPools.set(dbName, db);
   return db;

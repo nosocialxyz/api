@@ -1,13 +1,13 @@
-import Bluebird from 'bluebird';
-import { logger } from '../utils/logger';
-import { apolloClient } from '../apollo-client';
-import { LensApiRequestor } from '../types/lens-api.d';
-import { LENS_DATA_LIMIT } from '../config';
-import { DbRequestor } from '../types/database.d';
+import Bluebird from "bluebird";
+import { logger } from "../utils/logger";
+import { apolloClient } from "../apollo-client";
+import { LensApiRequestor } from "../types/lens-api.d";
+import { LENS_DATA_LIMIT } from "../config";
+import { DbRequestor } from "../types/database.d";
 import {
   ExploreProfilesDocument,
   ExploreProfilesRequest,
-  ProfileSortCriteria, 
+  ProfileSortCriteria,
   PublicationsQueryRequest,
   PublicationsDocument,
   PublicationTypes,
@@ -15,7 +15,7 @@ import {
   ProfilesDocument,
   ProfileDocument,
   SingleProfileQueryRequest,
-} from '../graphql/generated';
+} from "../graphql/generated";
 
 async function queryPublications(request: PublicationsQueryRequest) {
   const res = await apolloClient.query({
@@ -25,7 +25,7 @@ async function queryPublications(request: PublicationsQueryRequest) {
     },
   });
   return res.data;
-};
+}
 
 async function exploreProfiles(request: ExploreProfilesRequest) {
   const res = await apolloClient.query({
@@ -35,7 +35,7 @@ async function exploreProfiles(request: ExploreProfilesRequest) {
     },
   });
   return res.data.exploreProfiles;
-};
+}
 
 async function getProfilesShow(request: ProfileQueryRequest) {
   const res = await apolloClient.query({
@@ -45,8 +45,7 @@ async function getProfilesShow(request: ProfileQueryRequest) {
     },
   });
   const data = res.data.profiles;
-  if (data === null || data === undefined)
-    throw new Error('Get (show)profiles failed.');
+  if (data === null || data === undefined) throw new Error("Get (show)profiles failed.");
 
   return data;
 }
@@ -59,8 +58,7 @@ async function getProfile(request: SingleProfileQueryRequest) {
     },
   });
   const data = res.data.profile;
-  if (data === null || data === undefined)
-    throw new Error('Get (NS)profiles failed.');
+  if (data === null || data === undefined) throw new Error("Get (NS)profiles failed.");
 
   return data;
 }
@@ -68,13 +66,13 @@ async function getProfile(request: SingleProfileQueryRequest) {
 export function createLensApiRequestor(): LensApiRequestor {
   const getProfilesByAddress = async (address: string): Promise<any[]> => {
     const res: any[] = [];
-    let cursor = '{}';
+    let cursor = "{}";
     while (true) {
       try {
         const profiles = await getProfilesShow({
-          ownedBy:[address],
+          ownedBy: [address],
           cursor: cursor,
-          limit:LENS_DATA_LIMIT,
+          limit: LENS_DATA_LIMIT,
         });
 
         for (const profile of profiles.items) {
@@ -85,16 +83,14 @@ export function createLensApiRequestor(): LensApiRequestor {
           });
         }
         cursor = profiles.pageInfo.next;
-        if (profiles.items.length < LENS_DATA_LIMIT)
-          break;
+        if (profiles.items.length < LENS_DATA_LIMIT) break;
       } catch (e: any) {
         logger.error(`Get profiles by address failed, error:${e}`);
-        if (e.networkError && e.networkError.statusCode === 429)
-          await Bluebird.delay(60 * 1000);
+        if (e.networkError && e.networkError.statusCode === 429) await Bluebird.delay(60 * 1000);
       }
     }
     return res;
-  }
+  };
 
   const getProfileById = async (id: string, dbRequestor: DbRequestor): Promise<any> => {
     try {
@@ -106,16 +102,16 @@ export function createLensApiRequestor(): LensApiRequestor {
           location: string;
           website: string;
           twitter: string;
-        };
+        }
         let res: ProfileAttr = {
-          location: '',
-          website: '',
-          twitter: '',
+          location: "",
+          website: "",
+          twitter: "",
         };
         const tagSet = new Set(Object.keys(res));
         for (const { key, value } of profile.attributes) {
           if (tagSet.has(key)) {
-            res[key as keyof typeof res] = value
+            res[key as keyof typeof res] = value;
           }
         }
         return res;
@@ -126,7 +122,7 @@ export function createLensApiRequestor(): LensApiRequestor {
         }
         const url = pic.original.url;
         const lensInfraUrl = "https://lens.infura-ipfs.io/ipfs/";
-        const ipfsTitle = 'ipfs://'
+        const ipfsTitle = "ipfs://";
         if (url.startsWith(ipfsTitle)) {
           return lensInfraUrl + url.substring(ipfsTitle.length, url.length);
         }
@@ -145,13 +141,12 @@ export function createLensApiRequestor(): LensApiRequestor {
         following: profile.stats.totalFollowing,
         createdAt: createdAt,
         attributes: attributes,
-      }
+      };
     } catch (e: any) {
       logger.error(`Get profile:${id} failed, error:${e}`);
-      if (e.networkError && e.networkError.statusCode === 429)
-        await Bluebird.delay(60 * 1000);
+      if (e.networkError && e.networkError.statusCode === 429) await Bluebird.delay(60 * 1000);
     }
-  }
+  };
 
   return {
     getProfilesByAddress,

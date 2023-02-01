@@ -59,11 +59,7 @@ export const base = {
       res.json(profileBase);
     }, next);
   },
-  achievementCollect: async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) => {
+  achievementCollect: async (req: Request, res: Response, next: NextFunction) => {
     withDbReadyOnly(async (db: MongoDB) => {
       const dbRequestor = createDbRequestor(db);
       const profileId = String(req.query["id"]);
@@ -93,11 +89,7 @@ export const base = {
       if (hasNext) next();
     });
   },
-  achieveAchievement: async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) => {
+  achieveAchievement: async (req: Request, res: Response, next: NextFunction) => {
     withDbReady(async (db: MongoDB) => {
       const achvInstId = String(req.query["id"]);
       const dbRequestor = createDbRequestor(db);
@@ -157,12 +149,7 @@ export const ai = {
       logger.info(`⛓ [ai]: Push ${profileId} into waiting list`);
       // Waiting, Processing, AITagNotStarted, Generating, Finished
       // ProfileId types: 0xffffffff
-      await dbRequestor.pushProfileIntoWaiting(
-        profileId,
-        "0xffffffff",
-        "Finished",
-        "Waiting"
-      );
+      await dbRequestor.pushProfileIntoWaiting(profileId, "0xffffffff", "Finished", "Waiting");
       res.json({
         statusCode: 200,
         message: "success",
@@ -172,10 +159,7 @@ export const ai = {
   fetchProfile: async (req: Request, res: Response, next: NextFunction) => {
     withDbReady(async (db: MongoDB) => {
       const dbRequestor = createDbRequestor(db);
-      const next_waiting = await dbRequestor.fetchNextWaitingProfile(
-        "Waiting",
-        "Processing"
-      );
+      const next_waiting = await dbRequestor.fetchNextWaitingProfile("Waiting", "Processing");
       logger.info(`⛓ [ai]: Next waiting profile is ${next_waiting}`);
       res.json(next_waiting);
     }, next);
@@ -189,17 +173,8 @@ export const ai = {
       // -1 as total finished
       // 0 as ai analyze finished
       // >0 doing
-      const status =
-        unprocessed == -1
-          ? "Finished"
-          : unprocessed == 0
-          ? "AITagNotStarted"
-          : "Processing";
-      await dbRequestor.updateWaitingProfileStatus(
-        waiting_id,
-        unprocessed,
-        status
-      );
+      const status = unprocessed == -1 ? "Finished" : unprocessed == 0 ? "AITagNotStarted" : "Processing";
+      await dbRequestor.updateWaitingProfileStatus(waiting_id, unprocessed, status);
       res.json({
         statusCode: 200,
         message: "success",
@@ -251,15 +226,8 @@ export const ai = {
     withDbReady(async (db: MongoDB) => {
       const dbRequestor = createDbRequestor(db);
       const profileId = String(req.query["profile"]);
-      logger.info(
-        `⛓ [ai]: Push ${profileId} into waiting list to generate AI tag`
-      );
-      await dbRequestor.pushProfileIntoWaiting(
-        profileId,
-        "0xdddddddd",
-        "AITagGenerated",
-        "AITagNotStarted"
-      );
+      logger.info(`⛓ [ai]: Push ${profileId} into waiting list to generate AI tag`);
+      await dbRequestor.pushProfileIntoWaiting(profileId, "0xdddddddd", "AITagGenerated", "AITagNotStarted");
       res.json({
         statusCode: 200,
         message: "success",
@@ -269,10 +237,7 @@ export const ai = {
   fetchNextAITag: async (req: Request, res: Response, next: NextFunction) => {
     withDbReady(async (db: MongoDB) => {
       const dbRequestor = createDbRequestor(db);
-      const next_waiting = await dbRequestor.fetchNextWaitingProfile(
-        "AITagNotStarted",
-        "Generating"
-      );
+      const next_waiting = await dbRequestor.fetchNextWaitingProfile("AITagNotStarted", "Generating");
       logger.info(`⛓ [ai]: Next waiting profile is ${next_waiting}`);
       res.json(next_waiting);
     }, next);
@@ -283,8 +248,7 @@ export const nft = {
   pushNft: async (req: Request, res: Response, next: NextFunction) => {
     withDbReady(async (db: MongoDB) => {
       const dbRequestor = createDbRequestor(db);
-      const id =
-        String(req.body["profileId"]) + "-" + String(req.body["nftId"]);
+      const id = String(req.body["profileId"]) + "-" + String(req.body["nftId"]);
       const query = {
         _id: id,
       };
@@ -303,9 +267,7 @@ export const nft = {
         tokenId: null,
         _id: id,
       };
-      logger.info(
-        `⛓ [ai]: Update NFT ${data.nftId} for profile ${data.profileId}`
-      );
+      logger.info(`⛓ [ai]: Update NFT ${data.nftId} for profile ${data.profileId}`);
       await dbRequestor.updateOne(NFT_COLL, query, data);
       res.json({
         statusCode: 200,
@@ -316,10 +278,7 @@ export const nft = {
   fetchNft2Mint: async (req: Request, res: Response, next: NextFunction) => {
     withDbReady(async (db: MongoDB) => {
       const dbRequestor = createDbRequestor(db);
-      const next_waiting = await dbRequestor.fetchNextWaitingNFT(
-        "NotMinted",
-        "Minting"
-      );
+      const next_waiting = await dbRequestor.fetchNextWaitingNFT("NotMinted", "Minting");
       logger.info(`⛓ [ai]: Next waiting nft is ${next_waiting}`);
       res.json(next_waiting);
     }, next);
@@ -327,13 +286,8 @@ export const nft = {
   fetchNft2Update: async (req: Request, res: Response, next: NextFunction) => {
     withDbReady(async (db: MongoDB) => {
       const dbRequestor = createDbRequestor(db);
-      const next_waiting = await dbRequestor.fetchNextWaitingNFT(
-        "Minting",
-        "Minting"
-      );
-      logger.info(
-        `⛓ [ai]: Next waiting nft to update token id is ${next_waiting}`
-      );
+      const next_waiting = await dbRequestor.fetchNextWaitingNFT("Minting", "Minting");
+      logger.info(`⛓ [ai]: Next waiting nft to update token id is ${next_waiting}`);
       res.json(next_waiting);
     }, next);
   },
