@@ -198,33 +198,37 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
   };
 
   const getAITagsByHandle = async (handle: string): Promise<any> => {
-    const profile = await db.dbHandler.collection(PROFILE_COLL).findOne({handle:handle});
-    if (profile === null)
-      return null;
+    const profile = await db.dbHandler
+      .collection(PROFILE_COLL)
+      .findOne({ handle: handle });
+    if (profile === null) return null;
 
-    const tags = await db.dbHandler.collection(WAITING_COLL).aggregate([
-      {
-        $match: { _id: profile._id+"-0xffffffff" },
-      },
-      {
-        $lookup: {
-          from: NFT_COLL,
-          localField: "_id",
-          foreignField: "_id",
-          as: "nft_info",
+    const tags = await db.dbHandler
+      .collection(WAITING_COLL)
+      .aggregate([
+        {
+          $match: { _id: profile._id + "-0xffffffff" },
         },
-      },
-      {
-        $project: {
-          _id: 0,
-          unprocessed: 1,
-          tags: { $first: "$nft_info.tags" },
-          aiPicture: { $first: "$nft_info.pic_url" },
-        }
-      },
-    ]).tryNext();
-    if (tags === null)
-      return null;
+        {
+          $lookup: {
+            from: NFT_COLL,
+            localField: "_id",
+            foreignField: "_id",
+            as: "nft_info",
+          },
+        },
+        {
+          $project: {
+            _id: 0,
+            unprocessed: 1,
+            status: 1,
+            tags: { $first: "$nft_info.tags" },
+            aiPicture: { $first: "$nft_info.pic_url" },
+          },
+        },
+      ])
+      .tryNext();
+    if (tags === null) return null;
 
     const picture = ((pic: any) => {
       if (!(pic && pic.original && pic.original.url)) {
