@@ -1,14 +1,7 @@
 import { logger } from "../utils/logger";
 import { loadDB, MongoDB } from "../db";
 import { Dayjs } from "../utils/datetime";
-import {
-  DbRequestor,
-  ProfileType,
-  PostType,
-  AIResultType,
-  WaitingProfileType,
-  NFTStatus,
-} from "../types/database.d";
+import { DbRequestor, ProfileType, PostType, AIResultType, WaitingProfileType, NFTStatus } from "../types/database.d";
 import {
   PROFILE_COLL,
   PUBLICATION_COLL,
@@ -34,8 +27,7 @@ export enum AchievementStatus {
 }
 
 var ObjectID = require("mongodb").ObjectID;
-const nftPrefix =
-  "https://opensea.io/assets/matic/0x9b82daf85e9dcc4409ed13970035a181fb411542/";
+const nftPrefix = "https://opensea.io/assets/matic/0x9b82daf85e9dcc4409ed13970035a181fb411542/";
 
 function baseToDecimal(input: string, base: number) {
   // works up to 72057594037927928 / FFFFFFFFFFFFF8
@@ -55,10 +47,7 @@ function baseToDecimal(input: string, base: number) {
               ],
             },
             {
-              $indexOfBytes: [
-                "0123456789ABCDEF",
-                { $toUpper: { $substrBytes: [field, "$$this", 1] } },
-              ],
+              $indexOfBytes: ["0123456789ABCDEF", { $toUpper: { $substrBytes: [field, "$$this", 1] } }],
             },
           ],
         },
@@ -80,8 +69,7 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
     try {
       await db.dbHandler.collection(collName).insertMany(data);
     } catch (e: any) {
-      if (e.code !== 11000)
-        throw new Error(`Insert many data failed, message:${e}`);
+      if (e.code !== 11000) throw new Error(`Insert many data failed, message:${e}`);
     }
   };
 
@@ -93,44 +81,26 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
     await db.dbHandler.collection(collName).deleteMany(collName, query);
   };
 
-  const updateOne = async (
-    collName: string,
-    query: any,
-    data: any
-  ): Promise<void> => {
+  const updateOne = async (collName: string, query: any, data: any): Promise<void> => {
     // upsert is true which means create new document where the indicated one doesn't exist.
     const options = { upsert: true };
-    await db.dbHandler
-      .collection(collName)
-      .updateOne(query, { $set: data }, options);
+    await db.dbHandler.collection(collName).updateOne(query, { $set: data }, options);
   };
 
-  const findOne = async (
-    collName: string,
-    query: any,
-    options?: any
-  ): Promise<any> => {
+  const findOne = async (collName: string, query: any, options?: any): Promise<any> => {
     return await db.dbHandler.collection(collName).findOne(query, options);
   };
 
-  const findMany = async (
-    collName: string,
-    query: any,
-    options?: any
-  ): Promise<any> => {
+  const findMany = async (collName: string, query: any, options?: any): Promise<any> => {
     return await db.dbHandler.collection(collName).find(query, options);
   };
 
   const inWhitelist = async (address: string): Promise<boolean> => {
-    const res = await db.dbHandler
-      .collection(WHITELIST_COLL)
-      .findOne({ _id: address });
+    const res = await db.dbHandler.collection(WHITELIST_COLL).findOne({ _id: address });
     return res !== null;
   };
 
-  const getProfilesByAddress = async (
-    address: string
-  ): Promise<ProfileType[]> => {
+  const getProfilesByAddress = async (address: string): Promise<ProfileType[]> => {
     const res = await db.dbHandler.collection(PROFILE_COLL).aggregate([
       {
         $match: { ownedBy: address },
@@ -172,9 +142,7 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
     return await res.toArray();
   };
 
-  const getAIResultByProfile = async (
-    profile: string
-  ): Promise<AIResultType[]> => {
+  const getAIResultByProfile = async (profile: string): Promise<AIResultType[]> => {
     const res = await db.dbHandler.collection(AI_COLL).aggregate([
       {
         $match: { profile: profile },
@@ -198,9 +166,7 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
   };
 
   const getAITagsByHandle = async (handle: string): Promise<any> => {
-    const profile = await db.dbHandler
-      .collection(PROFILE_COLL)
-      .findOne({ handle: handle });
+    const profile = await db.dbHandler.collection(PROFILE_COLL).findOne({ handle: handle });
     if (profile === null) return null;
 
     const tags = await db.dbHandler
@@ -275,9 +241,7 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
         unprocessed: 0,
         status: postStatus,
       };
-      await db.dbHandler
-        .collection(WAITING_COLL)
-        .updateOne(filter, { $set: waiting }, { upsert: true });
+      await db.dbHandler.collection(WAITING_COLL).updateOne(filter, { $set: waiting }, { upsert: true });
       return true;
     } catch (e: any) {
       logger.warn("⛓ [db]: Something wrong with insert new waiting profile");
@@ -286,44 +250,24 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
     return false;
   };
 
-  const fetchNextWaitingProfile = async (
-    preStatus: string,
-    postStatus: string
-  ): Promise<WaitingProfileType> => {
+  const fetchNextWaitingProfile = async (preStatus: string, postStatus: string): Promise<WaitingProfileType> => {
     const res = await db.dbHandler
       .collection(WAITING_COLL)
-      .findOne(
-        { status: preStatus },
-        { projection: { status: 1, profileId: 1, _id: 0, id: "$_id" } }
-      );
+      .findOne({ status: preStatus }, { projection: { status: 1, profileId: 1, _id: 0, id: "$_id" } });
     if (res === null) {
       logger.info(`⛓ [db]: No waiting profile`);
       return res;
     }
-    await db.dbHandler
-      .collection(WAITING_COLL)
-      .updateOne({ _id: res.id }, { $set: { status: postStatus } });
+    await db.dbHandler.collection(WAITING_COLL).updateOne({ _id: res.id }, { $set: { status: postStatus } });
     return res;
   };
 
-  const updateWaitingProfileStatus = async (
-    id: string,
-    unprocessed: number,
-    status: string
-  ): Promise<boolean> => {
-    await db.dbHandler
-      .collection(WAITING_COLL)
-      .updateOne(
-        { _id: id },
-        { $set: { status: status, unprocessed: unprocessed } }
-      );
+  const updateWaitingProfileStatus = async (id: string, unprocessed: number, status: string): Promise<boolean> => {
+    await db.dbHandler.collection(WAITING_COLL).updateOne({ _id: id }, { $set: { status: status, unprocessed: unprocessed } });
     return true;
   };
 
-  const fetchNextWaitingNFT = async (
-    preStatus: string,
-    postStatus: string
-  ): Promise<any> => {
+  const fetchNextWaitingNFT = async (preStatus: string, postStatus: string): Promise<any> => {
     const resCursor = await db.dbHandler.collection(NFT_COLL).aggregate([
       {
         $lookup: {
@@ -354,20 +298,13 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
 
     logger.info(`⛓ [db]: query success ${JSON.stringify(res)}`);
     if (postStatus != preStatus) {
-      await db.dbHandler
-        .collection(NFT_COLL)
-        .updateOne({ _id: res.id }, { $set: { status: postStatus } });
+      await db.dbHandler.collection(NFT_COLL).updateOne({ _id: res.id }, { $set: { status: postStatus } });
     }
     return res;
   };
 
-  const updateWaitingNFTStatus = async (
-    id: string,
-    nftStatus: NFTStatus
-  ): Promise<boolean> => {
-    await db.dbHandler
-      .collection(NFT_COLL)
-      .updateOne({ _id: id }, { $set: nftStatus });
+  const updateWaitingNFTStatus = async (id: string, nftStatus: NFTStatus): Promise<boolean> => {
+    await db.dbHandler.collection(NFT_COLL).updateOne({ _id: id }, { $set: nftStatus });
     return true;
   };
 
@@ -441,9 +378,7 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
 
   const getProfileBaseById = async (id: string): Promise<any> => {
     // Get profile information
-    const profile = await db.dbHandler
-      .collection(PROFILE_COLL)
-      .findOne({ _id: id });
+    const profile = await db.dbHandler.collection(PROFILE_COLL).findOne({ _id: id });
     if (profile === null) {
       return null;
     }
@@ -480,11 +415,7 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
         {
           $set: {
             tokenStr: {
-              $cond: [
-                { $ne: ["$tokenIdInt", null] },
-                { $toString: baseToDecimal("$tokenIdInt", 16) },
-                null,
-              ],
+              $cond: [{ $ne: ["$tokenIdInt", null] }, { $toString: baseToDecimal("$tokenIdInt", 16) }, null],
             },
           },
         },
@@ -536,11 +467,7 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
         {
           $set: {
             tokenStr: {
-              $cond: [
-                { $ne: ["$tokenIdInt", null] },
-                { $toString: baseToDecimal("$tokenIdInt", 16) },
-                null,
-              ],
+              $cond: [{ $ne: ["$tokenIdInt", null] }, { $toString: baseToDecimal("$tokenIdInt", 16) }, null],
             },
           },
         },
@@ -617,10 +544,7 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
     };
 
     // Get benefits
-    const benefitTmpls = await db.dbHandler
-      .collection(BENEFIT_TMPL_COLL)
-      .find()
-      .toArray();
+    const benefitTmpls = await db.dbHandler.collection(BENEFIT_TMPL_COLL).find().toArray();
     const achvedBenefits: any[] = [];
     for (const b of benefitTmpls) {
       const achvb = await db.dbHandler
@@ -819,10 +743,7 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
       achvArray.push(achv);
     }
     for (let [provider, achvArray] of achvMap) {
-      if (
-        achvTmplMap.has(provider) &&
-        achvTmplMap.get(provider).length > achvArray.length
-      ) {
+      if (achvTmplMap.has(provider) && achvTmplMap.get(provider).length > achvArray.length) {
         const achvIdSet = new Set();
         for (const item of achvArray) {
           achvIdSet.add(item.id);
@@ -989,13 +910,9 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
     try {
       const query = { _id: id };
       const updateData = { status: AchievementStatus.ACHIEVED };
-      await db.dbHandler
-        .collection(ACHIEVEMENT_COLL)
-        .updateOne(query, { $set: updateData });
+      await db.dbHandler.collection(ACHIEVEMENT_COLL).updateOne(query, { $set: updateData });
     } catch (e: any) {
-      logger.error(
-        `Update achievement:${id} status to 'ACHIEVED' failed, error:${e}`
-      );
+      logger.error(`Update achievement:${id} status to 'ACHIEVED' failed, error:${e}`);
     }
   };
 
@@ -1028,9 +945,7 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
   };
 
   const hasAchievementById = async (id: string): Promise<boolean> => {
-    const res = await db.dbHandler
-      .collection(ACHIEVEMENT_COLL)
-      .findOne({ _id: id });
+    const res = await db.dbHandler.collection(ACHIEVEMENT_COLL).findOne({ _id: id });
     return res !== null;
   };
 

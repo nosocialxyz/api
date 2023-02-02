@@ -1,18 +1,9 @@
 import fs from "fs";
 import path from "path";
 
-const fileLensHub = fs.readFileSync(
-  path.join(__dirname, "abis/lens-hub-contract-abi.json"),
-  "utf8"
-);
-const fileLensPeriphery = fs.readFileSync(
-  path.join(__dirname, "abis/lens-periphery-data-provider.json"),
-  "utf8"
-);
-const fileFollowNFT = fs.readFileSync(
-  path.join(__dirname, "abis/lens-follow-nft-contract-abi.json"),
-  "utf8"
-);
+const fileLensHub = fs.readFileSync(path.join(__dirname, "abis/lens-hub-contract-abi.json"), "utf8");
+const fileLensPeriphery = fs.readFileSync(path.join(__dirname, "abis/lens-periphery-data-provider.json"), "utf8");
+const fileFollowNFT = fs.readFileSync(path.join(__dirname, "abis/lens-follow-nft-contract-abi.json"), "utf8");
 
 const getParamOrExit = (name: string) => {
   const param = process.env[name];
@@ -44,9 +35,7 @@ export const LENS_API = getParamOrExit("LENS_API");
 
 export const LENS_HUB_CONTRACT = getParamOrExit("LENS_HUB_CONTRACT");
 
-export const LENS_PERIPHERY_CONTRACT = getParamOrExit(
-  "LENS_PERIPHERY_CONTRACT"
-);
+export const LENS_PERIPHERY_CONTRACT = getParamOrExit("LENS_PERIPHERY_CONTRACT");
 
 export const LENS_PERIPHERY_NAME = "LensPeriphery";
 
