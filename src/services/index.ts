@@ -108,7 +108,7 @@ export const lenstag = {
       const dbRequestor = createDbRequestor(db);
       const handle = String(req.query["handle"]);
       const resQ = await dbRequestor.findOne(PROFILE_COLL, {
-        handle: handle + ".lens",
+        handle: handle === "lensprotocol" ? handle : handle + ".lens",
       });
       if (resQ === null) {
         res.json({
