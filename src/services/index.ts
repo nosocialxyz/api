@@ -108,7 +108,7 @@ export const lenstag = {
       const dbRequestor = createDbRequestor(db);
       const handle = String(req.query["handle"]);
       const resQ = await dbRequestor.findOne(PROFILE_COLL, {
-        handle: handle + ".lens",
+        handle: handle === "lensprotocol" ? handle : handle + ".lens",
       });
       if (resQ === null) {
         res.json({
@@ -147,7 +147,7 @@ export const ai = {
       const dbRequestor = createDbRequestor(db);
       const profileId = String(req.query["profile"]);
       logger.info(`⛓ [ai]: Push ${profileId} into waiting list`);
-      // Waiting, Processing, AITagNotStarted, Generating, Finished
+      // Waiting, Collecting, Processing, AITagNotStarted, Generating, Finished
       // ProfileId types: 0xffffffff
       await dbRequestor.pushProfileIntoWaiting(profileId, "0xffffffff", "Finished", "Waiting");
       res.json({
@@ -159,7 +159,7 @@ export const ai = {
   fetchProfile: async (req: Request, res: Response, next: NextFunction) => {
     withDbReady(async (db: MongoDB) => {
       const dbRequestor = createDbRequestor(db);
-      const next_waiting = await dbRequestor.fetchNextWaitingProfile("Waiting", "Processing");
+      const next_waiting = await dbRequestor.fetchNextWaitingProfile("Waiting", "Collecting");
       logger.info(`⛓ [ai]: Next waiting profile is ${next_waiting}`);
       res.json(next_waiting);
     }, next);
