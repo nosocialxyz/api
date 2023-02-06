@@ -197,6 +197,9 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
     if (tags === null) return null;
 
     const picture = ((pic: any) => {
+      if (pic && pic.uri) {
+        return pic.uri;
+      }
       if (!(pic && pic.original && pic.original.url)) {
         return null;
       }
