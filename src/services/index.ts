@@ -59,11 +59,7 @@ export const base = {
       res.json(profileBase);
     }, next);
   },
-  achievementCollect: async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) => {
+  achievementCollect: async (req: Request, res: Response, next: NextFunction) => {
     withDbReadyOnly(async (db: MongoDB) => {
       const dbRequestor = createDbRequestor(db);
       const profileId = String(req.query["id"]);
