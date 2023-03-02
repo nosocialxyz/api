@@ -11,6 +11,7 @@ export interface DbRequestor {
   getBenefitBaseById: (id: string) => Promise<any>;
   getProfileBaseById: (id: string) => Promise<any>;
   getProfilesByAddress: (address: string) => Promise<ProfileType[]>;
+  getProfileById: (id: string) => Promise<any>;
   getPostByProfile: (profile: string) => Promise<PostType[]>;
   getAITagsByHandle: (handle: string) => Promise<any>;
   genNftDataByAchvId: (id: string) => Promise<any>;
