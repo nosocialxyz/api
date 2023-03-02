@@ -29,11 +29,12 @@ export const base = {
     }, next);
   },
   profiles: async (req: Request, res: Response, next: NextFunction) => {
-    const lensApi = createLensApiRequestor();
-    const address = String(req.query["address"]);
-    const profiles = await lensApi.getProfilesByAddress(address);
-    res.json(profiles);
-    next();
+    withDbReady(async (db: MongoDB) => {
+      const dbRequestor = createDbRequestor(db);
+      const address = String(req.query["address"]);
+      const profiles = await dbRequestor.getProfilesByAddress(address);
+      res.json(profiles);
+    }, next);
   },
   profileBase: async (req: Request, res: Response, next: NextFunction) => {
     withDbReady(async (db: MongoDB) => {

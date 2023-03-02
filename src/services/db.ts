@@ -113,10 +113,61 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
           handle: 1,
         },
       },
-    ]);
-    if (res === null) return [];
+    ]).toArray();
 
-    return await res.toArray();
+    return await res;
+  };
+
+  const getProfileById = async (id: string): Promise<any> => {
+    const profile = await db.dbHandler.collection(PROFILE_COLL).findOne({_id: id});
+    if (!profile) {
+      throw new Error(`Cannot find id:${id} in DB.`);
+    }
+    const attributes = ((profile: any) => {
+      interface ProfileAttr {
+        location: string;
+        website: string;
+        twitter: string;
+      }
+      let res: ProfileAttr = {
+        location: "",
+        website: "",
+        twitter: "",
+      };
+      const tagSet = new Set(Object.keys(res));
+      for (const { key, value } of profile.attributes) {
+        if (tagSet.has(key)) {
+          res[key as keyof typeof res] = value;
+        }
+      }
+      return res;
+    })(profile);
+    const getPictureUrl = (pic: any) => {
+      if (!(pic.original && pic.original.url)) {
+        return null;
+      }
+      const url = pic.original.url;
+      const lensInfraUrl = "https://lens.infura-ipfs.io/ipfs/";
+      const ipfsTitle = "ipfs://";
+      if (url.startsWith(ipfsTitle)) {
+        return lensInfraUrl + url.substring(ipfsTitle.length, url.length);
+      }
+      return url;
+    };
+    const createdAt = await getEaliestCreatedPubDate(id);
+    return {
+      id: profile._id,
+      picture: getPictureUrl(profile.picture),
+      coverPicture: getPictureUrl(profile.coverPicture),
+      ownedBy: profile.ownedBy,
+      name: profile.name,
+      handle: profile.handle,
+      bio: profile.bio,
+      followers: profile.stats.totalFollowers,
+      following: profile.stats.totalFollowing,
+      createdAt: createdAt,
+      attributes: attributes,
+    };
   };
 
   const getPostByProfile = async (profile: string): Promise<PostType[]> => {
@@ -965,6 +1016,7 @@ export function createDbRequestor(db: MongoDB): DbRequestor {
     getBenefitBaseById,
     getProfileBaseById,
     getProfilesByAddress,
+    getProfileById,
     getPostByProfile,
     getAITagsByHandle,
     genNftDataByAchvId,
