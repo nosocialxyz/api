@@ -7,7 +7,7 @@ Nosocial API is a revolutionary product that puts developers at the forefront by
 - [Installation](#installation)
 - [Usage](#usage)
 - [Project Structure](#project-structure)
-- [Contributing](#contributing)
+- [Contributions](#contributions)
 - [License](#license)
 - [Credits](#credits)
 - [Contact](#contact)
