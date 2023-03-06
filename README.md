@@ -35,52 +35,22 @@ Here is the folder structure and short decriptions for some key contents.
 ├── VERSION
 ├── codegen.yaml
 ├── docker
-│   ├── Dockerfile
-│   ├── build.sh
-│   └── docker-compose.yaml
 ├── docs
-│   ├── Base API.md
-│   └── Entities.md
 ├── package.json
 ├── src
 │   ├── abis: Used for calling lens api
-│   │   ├── lens-follow-nft-contract-abi.json
-│   │   ├── lens-hub-contract-abi.json
-│   │   └── lens-periphery-data-provider.json
-│   ├── apollo-client.ts
-│   ├── config.ts
 │   ├── db: Basic db operator with mongo db
-│   │   └── index.ts
 │   ├── graphql: Used for calling lens api
-│   │   ├── common.graphql
-│   │   ├── explore-profiles.graphql
-│   │   ├── explore-publications.graphql
-│   │   ├── generated.ts
-│   │   ├── get-profile.graphql
-│   │   ├── get-profiles-show.graphql
-│   │   ├── get-publication.graphql
-│   │   └── get-publications.graphql
 │   ├── main.ts
 │   ├── services: Main logic of nosocial api
-│   │   ├── db.ts
-│   │   ├── index.ts
-│   │   ├── lens-api.ts
-│   │   └── utils.ts
 │   ├── state.ts
 │   ├── types: Type definitions
-│   │   ├── context.d.ts
-│   │   ├── database.d.ts
-│   │   └── lens-api.d.ts
-│   └── utils
-│       ├── datetime.ts
-│       ├── index.ts
-│       ├── logger.ts
-│       └── promise-utils.ts
+│   └── utils: Utils functions
 ├── tsconfig.json
 └── yarn.lock
 ```
 
-## Contributing
+## Contributions
 
 We welcome contributions from the community! If you have any enhancements, bug fixes, or issues, please do send us a pull request or open an issue on the Github page.
 
